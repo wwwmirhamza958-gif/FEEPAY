@@ -1,0 +1,30 @@
+{
+  "grossTotal": "142500.00",
+  "discountTotal": "-40000.00",
+  "netTotal": "102500.00",
+  "isPreview": true,
+  "taxLinesCount": 0,
+  "lines": [
+    {
+      "feeHeadCode": "TUITION",
+      "description": "Tuition",
+      "amount": "142500.00",
+      "trace": "15 credit hours \u00D7 Rs\u20099,500 = Rs\u2009142,500",
+      "kind": "Charge"
+    },
+    {
+      "feeHeadCode": "TUITION",
+      "description": "Merit scholarship",
+      "amount": "-35625.00",
+      "trace": "Merit scholarship 25% of tuition = \u2212Rs\u200935,625",
+      "kind": "Discount"
+    },
+    {
+      "feeHeadCode": "TUITION",
+      "description": "Sibling concession",
+      "amount": "-4375.00",
+      "trace": "Sibling concession 10% of tuition = \u2212Rs\u20094,375 (policy max applied)",
+      "kind": "Discount"
+    }
+  ]
+}

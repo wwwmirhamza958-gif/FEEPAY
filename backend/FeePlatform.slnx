@@ -36,5 +36,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/FeePlatform.Api.Tests/FeePlatform.Api.Tests.csproj" />
+    <Project Path="tests/FeePlatform.FeeEngine.Tests/FeePlatform.FeeEngine.Tests.csproj" />
   </Folder>
 </Solution>

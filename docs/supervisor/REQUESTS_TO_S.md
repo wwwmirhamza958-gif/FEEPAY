@@ -21,3 +21,23 @@ Status: Aligned to `CONTRACT.md` v1 after it landed on the branch.
 | A→S-2 | When NSwag vs `Microsoft.AspNetCore.OpenApi` + `openapi-typescript` is frozen, note it in CONTRACT §9. |
 
 No requests to change `DESIGN_SUPERVISOR.md` token values.
+
+---
+
+## Agent B — Fee engine (P1)
+
+Date: 2026-09-25
+Branch: `agent/b-p1-fee-engine`
+
+### Implemented without CONTRACT edit
+
+- Money half-up / wire / `FormatPkr` mirrored in `FeePlatform.Modules.FeeEngine.Money.MoneyMath` (same semantics as `packages/money`)
+- Canonical fee-head codes from CONTRACT §5.5 used in fixtures
+- Tax slot accepted on input; **no tax lines emitted** (§7.4 / §8.2)
+
+### Open asks
+
+| ID | Ask | Priority |
+|---|---|---|
+| B→S-1 | Add a canonical fee-head code for late-fee adjustment lines (engine default `LATE_FEE` today). Prefer seed row in §5.5 or an explicit “adjustment head codes” note so C/E do not invent synonyms. | Medium |
+| B→S-2 | Optional: freeze JSON schema_version = 1 parameter property names for each `FeeRuleType` in CONTRACT or an annex, so Billing persistence of rule JSONB matches the engine parser. | Low (engine owns typed records + `RuleParametersParser` for now) |
