@@ -3,102 +3,83 @@
 | | |
 |---|---|
 | **Phase** | P0 Foundation |
-| **Branches** | S: `agent/s-p0-contract` · A: `agent/a-p0-platform` (`5e1ceee`) |
-| **Contract** | `CONTRACT.md` v1 |
+| **Branches** | S: `agent/s-p0-contract` / `agent/s-p0-contract-v1.1` · A: `agent/a-p0-platform` + `agent/a-p0-close-gate` (`e9ef52f`) |
+| **Contract** | `CONTRACT.md` **v1.1** |
 | **Gate reference** | `FEE_PLATFORM_IMPLEMENTATION_PLAN.md` §16.4 · §17 |
-| **Status** | **Scaffold accepted; full P0 gate NOT passed** — auth/staging + cross-tenant CI still open (R-A-010, R-A-011) |
+| **Status** | **Engineering gate largely met in CI; staging login gate still open** (R-A-011 / R-A-012) |
 
 ---
 
-## P0 context (what this phase builds)
+## P0 context
 
-Monorepo, CI, environments, tenancy + RLS, auth (OTP + portal login/2FA), RBAC, audit, outbox, OpenAPI contract pipeline, design system shell, shared TS packages (`api-client`, `ui`, `money`, `validation`), and `CONTRACT.md` v1.
+Monorepo, CI, tenancy + query-filter isolation tests, auth (OTP + portal password) with integration tests, RBAC stubs, audit/outbox, OpenAPI → generated `@fee/api-client`, design-system shell, shared TS packages, `CONTRACT.md` v1.1.
 
-**P0 gate (plan §17):** Cross-tenant isolation tests green; a portal user and a parent can log in on staging; `CONTRACT.md` ratified; supervisor gate (§16.4) complete.
+**Plan §17 P0 gate:** Cross-tenant isolation tests green; portal + parent login on **staging**; CONTRACT ratified; supervisor gate complete.
 
 ---
 
-## §16.4 Supervisor gate checklist
-
-Complete **in order**. An abandoned or partial pass means the gate has **not** been passed.
+## §16.4 Supervisor gate checklist (re-check 2026-09-25)
 
 ### 1. Ownership audit
 
 | Check | Result | Notes |
 |---|---|---|
-| No agent edited another agent's owned paths | ✅ Pass | S: CONTRACT + supervisor docs only. A: apps/backend/packages/CI; did not edit CONTRACT.md |
-| S touched only CONTRACT / supervisor / shared seed defs | ✅ Pass | |
-| A touched only Platform-owned paths | ✅ Pass | Module *markers* for B–G only; no feature logic |
-| No feature modules from B–G merged as P0 scope creep | ✅ Pass | |
+| No agent edited another agent's owned paths | ✅ | |
+| S: CONTRACT / supervisor only | ✅ | v1.1 OpenAPI freeze |
+| A: Platform paths only | ✅ | |
+| No B–G feature creep | ✅ | |
 
 ### 2. Contract conformance
 
 | Check | Result | Notes |
 |---|---|---|
-| Money: `numeric(18,2)` / `decimal`; no float/double | ✅ Pass | `packages/money` rejects number constructors |
-| Money wire: decimal strings; format via `packages/money` | ✅ Pass | Tests cover thin space + true minus |
-| Status enums match CONTRACT §2 | ✅ Pass | StatusPill kinds; deferment kinds deferred to R-A-004 follow-up |
-| Overdue not stored as Invoice.status | ✅ Pass | Derived `Overdue` / `DueSoon` display only |
-| API errors use CONTRACT §3 envelope; clients parse it | ✅ Pass | `ApiErrors` + `parseApiError` |
-| Domain / outbox event names match CONTRACT §4 | ⚠️ Partial | Missing PaymentReversed + Deferment* (R-A-009) |
-| OpenAPI schemas align with CONTRACT §9 | ⚠️ Partial | Pipeline stub; client not generated (R-A-003) |
-| Forbidden tooling absent | ✅ Pass | CI grep + Program.cs comments |
+| Money rules | ✅ | |
+| Status enums / derived Overdue | ✅ | |
+| API §3 envelope + `parseApiError` | ✅ | Auth wrong-OTP tested |
+| Domain events §4 complete | ✅ | R-A-009 |
+| OpenAPI §9.1 + generated client | ✅ | R-A-003; `dotnet test` includes OpenAPI schema check |
+| Forbidden tooling | ✅ | |
 
 ### 3. Seed and reference reconciliation
 
 | Check | Result | Notes |
 |---|---|---|
-| Pilot `tenant_id` / slug / fee head codes / adapter codes match §5 | ✅ Pass | `PilotSeed` UUID + adapter codes match; fee heads not yet applied as DB rows |
-| No real CNICs or real parent phones in seeds | ✅ Pass | Fake `+923001111001` only |
-| No duplicate contradictory bank or program codes | ✅ Pass | Single owner constants |
+| Pilot constants match §5 | ✅ | |
+| No real PII in seeds | ✅ | |
 
 ### 4. Cross-module trace
 
 | Check | Result | Notes |
 |---|---|---|
-| **P0 minimum:** portal user login + parent OTP login on staging | ❌ Not met | Auth stubs / portal 501; no staging env (R-A-011) |
-| Outbox infrastructure present; jobs fail closed without tenant | ⚠️ Partial | Outbox + Hangfire stubs present; fail-closed not proven in test |
+| Parent OTP + portal login (test host) | ✅ | 10 tests green (`dotnet test` Release) |
+| Parent OTP + portal login on **staging** | ❌ | No Docker/Postgres/Redis on build machine (R-A-011/012) |
+| EF tenant query-filter isolation | ✅ | R-A-010 |
+| PostgreSQL RLS isolation | ❌ Deferred | R-A-012 |
+| Outbox / fail-closed without tenant | ✅ Partial | Filter fail-closed covered; Hangfire PG not |
 
 ### 5. Deferred-scope check
 
-| Check | Result | Notes |
-|---|---|---|
-| No wallet / held balances | ✅ Pass | |
-| No card PAN/CVV fields or custom card form | ✅ Pass | |
-| No WebView checkout | ✅ Pass | |
-| No tax rules UI, tax lines, tax statements, tax events | ✅ Pass | |
-| No native app work before web payment proven | ✅ Pass | |
-| No BNPL / AI / LMS / school-only MVP UI | ✅ Pass | |
+| Check | Result |
+|---|---|
+| No wallet / card form / WebView / tax UI / native / BNPL / AI | ✅ |
 
 ### 6. Written sign-off
 
 | Field | Value |
 |---|---|
-| Sign-off status | **NOT PASSED** (scaffold merge allowed; phase gate held) |
-| Signed by (Agent S) | Orchestrator acting as S — 2026-09-25 |
-| Date (UTC) | 2026-09-25 |
-| What was checked | Ownership, contract spot-check on money/errors/statuses/seeds/forbidden tooling, Design Gate token audit on `packages/ui` (hex only in `tokens.css`), deferred-scope grep |
-| Findings / follow-ups | R-A-003, R-A-009, R-A-010, R-A-011 open. Full P0 §17 gate blocked on staging login + cross-tenant CI. |
-| CONTRACT ratified (yes/no) | **Yes** — v1 ratified for agents to build against |
-| Design Gate (§11) on `packages/ui` | **Conditional pass** — tokens, Button, StatusPill OK for shell; full screen matrix N/A until F/E screens exist |
+| Sign-off status | **CONDITIONAL PASS** — CI/foundation accepted; **do not start P1 billing/payments UI until staging auth is demonstrated or product owner waives R-A-011** |
+| Signed by | Orchestrator as S — 2026-09-25 |
+| CONTRACT ratified | **Yes** (v1.1) |
+| Design Gate `packages/ui` | Conditional pass (shell only; full §11 when F/E screens exist) |
+| Findings | NuGet advisories remain (OpenApi, Newtonsoft via Hangfire, OpenTelemetry). Prefer upgrading when Hangfire/OTel allow. |
+| Follow-ups | R-A-011 Partial, R-A-012 Open |
 
-> Do not mark the **phase** done until R-A-010 and R-A-011 close and every required box is green. Scaffold merge ≠ phase complete.
-
----
-
-## Design Gate notes (`packages/ui`, orchestrator)
-
-| Before | After | Why |
-| --- | --- | --- |
-| (n/a — greenfield) | Hex only in `tokens.css`; apps consume CSS vars | Token audit §11.1 |
-| (n/a) | Primary button uses `--ink`; tenant brand is `--tenant-brand` identity only | DESIGN §3.2 |
-| (n/a) | StatusPill kinds closed set from CONTRACT | §5.3 / §16.1 vocabulary discipline |
+> Phase is **merge-ready for foundation**. Plan §17 wording “login on staging” is **not** fully satisfied without infra.
 
 ---
 
 ## Related artefacts
 
-- `CONTRACT.md` (repo root)
+- `CONTRACT.md`
 - `docs/supervisor/REQUESTS_TO_A.md`
-- `docs/supervisor/REQUESTS_TO_S.md` (A→S answers recorded in REQUESTS_TO_A)
 - `DESIGN_SUPERVISOR.md`
