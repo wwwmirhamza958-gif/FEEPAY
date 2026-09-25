@@ -5,7 +5,7 @@
 | **Phase** | P1 Setup, data and engine |
 | **Lead agents** | B (Fee engine), C (Billing & data), E (Institution portal) |
 | **Contract** | `CONTRACT.md` v1.1 |
-| **Status** | **In progress** — agents launched 2026-09-25 |
+| **Status** | **In progress** — E merged to `main` (`14b1f89`); B & C restoring stashed WIP then committing |
 | **P0 note** | Staging login (R-A-011) still open; P1 proceeds on CI foundation with product-owner go-ahead |
 
 ## Ownership (do not cross)
