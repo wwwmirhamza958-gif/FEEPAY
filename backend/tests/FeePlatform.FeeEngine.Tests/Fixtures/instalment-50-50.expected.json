@@ -1,0 +1,32 @@
+{
+  "grossTotal": "142500.00",
+  "discountTotal": "0.00",
+  "netTotal": "142500.00",
+  "isPreview": true,
+  "taxLinesCount": 0,
+  "lines": [
+    {
+      "feeHeadCode": "TUITION",
+      "description": "Tuition",
+      "amount": "142500.00",
+      "trace": "15 credit hours \u00D7 Rs\u20099,500 = Rs\u2009142,500",
+      "kind": "Charge"
+    }
+  ],
+  "instalments": [
+    {
+      "sequence": 1,
+      "amount": "71250.00",
+      "percentShare": 50,
+      "dueDate": "2026-09-01",
+      "trace": "Instalment 1: 50% = Rs\u200971,250"
+    },
+    {
+      "sequence": 2,
+      "amount": "71250.00",
+      "percentShare": 50,
+      "dueDate": "2026-11-01",
+      "trace": "Instalment 2: 50% = Rs\u200971,250"
+    }
+  ]
+}

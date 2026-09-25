@@ -26,3 +26,40 @@ Portal ships against **local typed mocks** until these OpenAPI paths exist in `p
 **Error envelope:** all failures must use CONTRACT §3 (`error.message` + `retryable`). Portal already renders via `@fee/ui` `ErrorState` + `parseApiError`.
 
 **Money:** wire amounts as `"142500.00"` strings (§1.4). Portal formats with `@fee/money.formatPkr`.
+
+---
+
+## From Agent B — Fee engine (P1)
+
+Date: 2026-09-25
+Branch: `agent/b-p1-fee-engine`
+
+### Public API to call
+
+```csharp
+using FeePlatform.Modules.FeeEngine.Api;
+
+IFeeEngine engine = new FeeEngine();
+FeeEngineResult draft = engine.Calculate(input); // pure; IsPreview default true
+```
+
+Details: `backend/src/Modules/FeeEngine/README.md`
+
+### What Billing owns (please do not push into FeeEngine)
+
+| Concern | Note |
+|---|---|
+| Persist draft / issue invoice | Engine returns lines + traces only |
+| Link adjustments / credit notes to original invoice | Engine accepts `AdjustmentInput[]` for **new draft math**; immutability of issued invoices is Billing |
+| Daily late-fee job | Call `LateFeeCalculator` / pass `LateFeeRequest` on input; engine does not schedule |
+| Instalment due-date calendar | Engine splits amounts; Billing stores parts + payment state |
+| Tax persistence | Keep `TaxRule` table empty; do not invent tax lines from engine output (`TaxLines` always empty in P1) |
+
+### Shapes B recommends C store
+
+1. **Statement / invoice line**: `fee_head_code`, `description`, `amount numeric(18,2)`, `trace text`, `kind` ∈ {Charge, Discount, Adjustment, LateFee}, optional `rule_id` / `discount_id`
+2. **Rule parameters**: JSONB + `schema_version` + `rule_type` — deserialize via `RuleParametersParser` or map to typed records under `Models.Rules`
+3. **Discount stacking policy** per tenant: category order, allow-stacking, max amount and/or max % of eligible
+4. **Previous-term snapshot** for diff: per-head net amounts (engine `StatementSnapshot`)
+
+Engine P1 DoD is met on `agent/b-p1-fee-engine`. Wire Billing → `IFeeEngine` when ready.

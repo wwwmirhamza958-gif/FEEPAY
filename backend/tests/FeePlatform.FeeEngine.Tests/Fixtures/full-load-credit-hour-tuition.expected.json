@@ -1,0 +1,16 @@
+{
+  "grossTotal": "142500.00",
+  "discountTotal": "0.00",
+  "netTotal": "142500.00",
+  "isPreview": true,
+  "taxLinesCount": 0,
+  "lines": [
+    {
+      "feeHeadCode": "TUITION",
+      "description": "Tuition",
+      "amount": "142500.00",
+      "trace": "15 credit hours \u00D7 Rs\u20099,500 = Rs\u2009142,500",
+      "kind": "Charge"
+    }
+  ]
+}
