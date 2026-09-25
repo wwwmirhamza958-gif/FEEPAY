@@ -22,5 +22,5 @@ No open requests require A to change `DESIGN_SUPERVISOR.md`. Token values remain
 
 | ID | Status | Decision |
 |---|---|---|
-| A→S-1 | Accepted for later | OpenAPI artifact path: default **CI generates into `packages/api-client/src/generated/`** and commits on the contract-change PR. Confirm in CONTRACT §9 when generator is frozen. |
-| A→S-2 | Accepted for later | Prefer **AspNetCore OpenAPI document + `openapi-typescript`** for TS client; NSwag optional for C#. Freeze in CONTRACT §9 before P2. |
+| A→S-1 | **Done** | Frozen in CONTRACT §9.1 — `packages/api-client/src/generated/`, committed on OpenAPI-change PRs. |
+| A→S-2 | **Done** | Frozen in CONTRACT §9.1 — AspNetCore OpenAPI + `openapi-typescript`; NSwag optional later. |

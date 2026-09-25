@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Owned by** | Agent **S** (Supervisor) only |
-| **Version** | **v1** — P0 Foundation |
+| **Version** | **v1.1** — P0 Foundation (OpenAPI path frozen) |
 | **Companion** | `FEE_PLATFORM_IMPLEMENTATION_PLAN.md` v0.2 · `DESIGN_SUPERVISOR.md` v1.0 |
 | **Rule** | Any agent that edits this file has its work **rejected for that phase**. Request a change; do not patch locally. |
 
@@ -585,7 +585,17 @@ Until the first generated document lands, agents must align designs to:
 4. Event names in docs/webhooks matching §4.
 5. No paths for §8 forbidden features.
 
-A implements Swashbuckle/NSwag pipeline; **schema meaning** disputes escalate to S.
+### 9.1 Generator and artifact path (frozen P0)
+
+| Decision | Value |
+|---|---|
+| API document | ASP.NET Core OpenAPI (`Microsoft.AspNetCore.OpenApi`) emits `openapi.json` from the API host |
+| TypeScript client | `openapi-typescript` → types only; thin fetch wrapper may live beside generated types |
+| Output path | `packages/api-client/src/generated/` (committed on the PR that changes the OpenAPI surface) |
+| CI | Generate in CI; fail if working tree differs from committed generated files |
+| C# client | Optional later; NSwag only if a second consumer needs it — not required for P0–P2 |
+
+A implements the pipeline. **Schema meaning** disputes escalate to S. Hand-written DTOs that duplicate OpenAPI shapes remain forbidden (§8.3).
 
 ---
 
@@ -595,8 +605,8 @@ A implements Swashbuckle/NSwag pipeline; **schema meaning** disputes escalate to
 2. S edits `CONTRACT.md`, bumps the version note in the header, and notifies affected agents.
 3. No silent local forks of enums, error shapes, or seed codes.
 
-**Contract ratified:** pending P0 supervisor gate (`docs/supervisor/PHASE_P0_LOG.md`).
+**Contract ratified:** **Yes** (v1 / v1.1) — agents build against this file. Full P0 *phase* gate remains tracked in `docs/supervisor/PHASE_P0_LOG.md`.
 
 ---
 
-*End of CONTRACT.md v1*
+*End of CONTRACT.md v1.1*
