@@ -3,3 +3,48 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Portal dense density — DESIGN_SUPERVISOR §9 (body 14–15 px) */
+.fee-portal {
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.fee-portal h1 {
+  font: var(--font-title-1);
+  text-wrap: balance;
+}
+
+.fee-portal h2 {
+  font: var(--font-title-2);
+  text-wrap: balance;
+}
+
+.fee-portal .fee-table-row {
+  min-block-size: 44px;
+}
+
+/* Dialog / dropdown scrim — ink at 40% (tokens only) */
+.fee-overlay {
+  background-color: color-mix(in srgb, var(--ink) 40%, transparent);
+}
+@keyframes fee-dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.fee-dialog-panel {
+  animation: fee-dialog-in var(--dur-fast) var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fee-dialog-panel {
+    animation: none;
+  }
+}

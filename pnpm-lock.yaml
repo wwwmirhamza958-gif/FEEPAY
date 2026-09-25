@@ -17,9 +17,21 @@ importers:
 
   apps/institution-portal:
     dependencies:
+      '@fee/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
+      '@fee/money':
+        specifier: workspace:*
+        version: link:../../packages/money
       '@fee/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      lucide-react:
+        specifier: ^0.525.0
+        version: 0.525.0(react@19.3.0)
       next:
         specifier: ^15.3.4
         version: 15.5.26(@types/node@22.20.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)

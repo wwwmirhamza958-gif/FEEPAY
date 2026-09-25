@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Lexend, Source_Sans_3 } from "next/font/google";
+import { PortalShell } from "@/components/shell/PortalShell";
 import "./globals.css";
 
 const lexend = Lexend({
@@ -24,7 +25,9 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${lexend.variable} ${sourceSans.variable}`}>
-      <body className="fee-canvas antialiased">{children}</body>
+      <body className="fee-canvas antialiased">
+        <PortalShell>{children}</PortalShell>
+      </body>
     </html>
   );
 }
