@@ -1,6 +1,6 @@
 ﻿namespace FeePlatform.Modules.Integrations;
 
-/// <summary>Empty module stub — owned by another agent. Do not implement feature tables here (Agent A / P0).</summary>
+/// <summary>Integrations module — import wizard + ERP connector framework stubs.</summary>
 public static class ModuleMarker
 {
     public const string Name = "Integrations";

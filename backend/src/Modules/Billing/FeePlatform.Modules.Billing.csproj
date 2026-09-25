@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\IdentityTenancy\FeePlatform.Modules.IdentityTenancy.csproj" />
+    <ProjectReference Include="..\FeeEngine\FeePlatform.Modules.FeeEngine.csproj" />
+  </ItemGroup>
+
 </Project>

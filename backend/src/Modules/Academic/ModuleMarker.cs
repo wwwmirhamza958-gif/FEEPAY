@@ -1,6 +1,8 @@
-﻿namespace FeePlatform.Modules.Academic;
+﻿using FeePlatform.Modules.IdentityTenancy;
 
-/// <summary>Empty module stub — owned by another agent. Do not implement feature tables here (Agent A / P0).</summary>
+namespace FeePlatform.Modules.Academic;
+
+/// <summary>Academic Data module — programs, intakes, terms, courses, students, guardians, enrolments.</summary>
 public static class ModuleMarker
 {
     public const string Name = "Academic";

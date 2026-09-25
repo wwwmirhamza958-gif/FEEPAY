@@ -1,13 +1,18 @@
 using FeePlatform.Infrastructure.Audit;
 using FeePlatform.Infrastructure.Auth;
+using FeePlatform.Infrastructure.Billing;
+using FeePlatform.Infrastructure.Integrations;
 using FeePlatform.Infrastructure.Outbox;
 using FeePlatform.Infrastructure.Persistence;
 using FeePlatform.Infrastructure.Tenancy;
 using FeePlatform.Modules.Audit;
+using FeePlatform.Modules.FeeEngine.Api;
+using FeePlatform.Modules.Integrations.Erp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
+using FeeEngineImpl = FeePlatform.Modules.FeeEngine.Api.FeeEngine;
 
 namespace FeePlatform.Infrastructure;
 
@@ -40,8 +45,11 @@ public static class DependencyInjection
 
         services.AddScoped<IOutboxDispatcher, OutboxDispatcherStub>();
         services.AddScoped<IAuditWriter, AuditWriterStub>();
+        services.AddSingleton<IFeeEngine, FeeEngineImpl>();
+        services.AddScoped<BillingService>();
+        services.AddScoped<ImportWizardService>();
+        services.AddSingleton<IErpConnector, StubErpConnector>();
 
-        // Redis is optional — required for production OTP throttling later; tests skip it.
         var redisEnabled = configuration.GetValue("Redis:Enabled", defaultValue: true);
         if (redisEnabled)
         {

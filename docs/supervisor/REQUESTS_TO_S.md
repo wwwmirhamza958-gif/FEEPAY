@@ -41,3 +41,15 @@ Branch: `agent/b-p1-fee-engine`
 |---|---|---|
 | B→S-1 | Add a canonical fee-head code for late-fee adjustment lines (engine default `LATE_FEE` today). Prefer seed row in §5.5 or an explicit “adjustment head codes” note so C/E do not invent synonyms. | Medium |
 | B→S-2 | Optional: freeze JSON schema_version = 1 parameter property names for each `FeeRuleType` in CONTRACT or an annex, so Billing persistence of rule JSONB matches the engine parser. | Low (engine owns typed records + `RuleParametersParser` for now) |
+
+---
+
+## From Agent C — Billing & data (P1)
+
+| ID | Ask |
+|---|---|
+| C→S-1 | Confirm enrolment lifecycle words `Enrolled` / `Dropped` are acceptable (not in §2 vocabularies). |
+| C→S-2 | Confirm P1 portal tenant header `X-Tenant-Id` stub until A wires session→tenant. |
+| C→S-3 | `AcademicPilotSeed` (C) should be called from A's official seed runner for §5. |
+| C→S-4 | Fee-schedule / discount write APIs return 501 until B owns mutable config — confirm OK for P1 Design Gate. |
+| C→S-5 | Note: Billing wires `IFeeEngine` from B; fee-head catalog includes `LATE_FEE` per CONTRACT v1.2. |
