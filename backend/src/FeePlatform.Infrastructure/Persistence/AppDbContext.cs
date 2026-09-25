@@ -115,7 +115,11 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ITenant
         {
             e.ToTable("audit_events");
             e.HasKey(x => x.Id);
-            e.Property(x => x.Id).UseIdentityAlwaysColumn();
+            // IdentityAlways is PostgreSQL-specific; InMemory/tests use ValueGeneratedOnAdd.
+            if (Database.ProviderName?.Contains("Npgsql", StringComparison.OrdinalIgnoreCase) == true)
+                e.Property(x => x.Id).UseIdentityAlwaysColumn();
+            else
+                e.Property(x => x.Id).ValueGeneratedOnAdd();
             e.Property(x => x.Action).HasMaxLength(128);
             e.Property(x => x.ActorType).HasMaxLength(64);
             e.Property(x => x.EntityType).HasMaxLength(128);

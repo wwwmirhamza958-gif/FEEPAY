@@ -16,12 +16,14 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "echo \"no tests yet\"",
     "lint": "echo \"no lint yet\"",
-    "generate": "echo \"TODO: generate from OpenAPI — see README.md\""
+    "generate": "openapi-typescript ./openapi.json -o ./src/generated/schema.d.ts",
+    "generate:check": "openapi-typescript ./openapi.json -o ./src/generated/schema.d.ts && git diff --exit-code -- ./src/generated/schema.d.ts"
   },
   "dependencies": {
     "@fee/validation": "workspace:*"
   },
   "devDependencies": {
+    "openapi-typescript": "^7.8.0",
     "typescript": "^5.8.3"
   }
 }

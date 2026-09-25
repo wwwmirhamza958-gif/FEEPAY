@@ -1,23 +1,17 @@
 /**
- * Placeholder for the OpenAPI-generated client (CONTRACT §6.3 / §9).
+ * Generated OpenAPI types live in ./generated (CONTRACT section 9.1).
+ * Hand-written endpoint DTOs are forbidden — regenerate from openapi.json instead.
  *
- * FORBIDDEN: hand-written API request/response DTOs for endpoints.
- * Until generation runs, only the CONTRACT §3 error type is re-exported
- * from @fee/validation (shared parse surface — not a hand-written endpoint shape).
+ * parseApiError remains from @fee/validation (CONTRACT section 3 / section 6.2).
  */
 
-export type {
-  ApiErrorEnvelope,
-  ApiError,
-  ApiErrorDetail,
-} from "@fee/validation";
+export type { paths, components, operations, webhooks } from "./generated/schema.js";
 
+import type { components as SchemaComponents } from "./generated/schema.js";
+
+export type ApiError = SchemaComponents["schemas"]["ApiError"];
+export type ApiErrorDetail = SchemaComponents["schemas"]["ApiErrorDetail"];
+export type ApiErrorEnvelope = SchemaComponents["schemas"]["ApiErrorEnvelope"];
+
+/** Runtime §3 parser — always yields a usable message (never silent/empty). */
 export { parseApiError } from "@fee/validation";
-
-export const API_CLIENT_PLACEHOLDER = true as const;
-
-export function assertGeneratedClient(): never {
-  throw new Error(
-    "@fee/api-client: no generated client yet. Run the OpenAPI generate step (see README)."
-  );
-}

@@ -20,6 +20,13 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Verify OpenAPI client types
+        run: |
+          pnpm --filter @fee/api-client generate
+          git diff --exit-code -- packages/api-client/src/generated/ || (
+            echo "Generated api-client types are out of date. Run: pnpm --filter @fee/api-client generate"
+            exit 1
+          )
       - run: pnpm run build
       - run: pnpm run test
 
@@ -35,6 +42,8 @@ jobs:
         run: dotnet restore backend/FeePlatform.slnx
       - name: Build
         run: dotnet build backend/FeePlatform.slnx --no-restore -c Release
+      - name: Test (InMemory — no Postgres/Redis)
+        run: dotnet test backend/FeePlatform.slnx --no-build -c Release
       - name: Guard forbidden tooling
         run: |
           if grep -RInE 'Database\.Migrate\(|AutoMapper|MediatR|EPPlus' backend --exclude-dir=obj --exclude-dir=bin; then

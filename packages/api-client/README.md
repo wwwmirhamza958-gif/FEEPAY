@@ -1,30 +1,39 @@
 # @fee/api-client
 
-Generated TypeScript client for the Fee Platform API.
+Generated TypeScript types for the Fee Platform API (CONTRACT section 9.1).
 
 ## Rule (frozen)
 
-**Do not hand-write request/response shapes.** All HTTP types come from the
-backend OpenAPI document (NSwag / Swashbuckle), matching `CONTRACT.md`.
+**Do not hand-write request/response shapes.** All HTTP types come from
+`openapi.json` via `openapi-typescript`.
 
-## Generate (planned)
+## Pipeline
 
-```bash
-# from repo root, after the API is running and OpenAPI is published:
-pnpm --filter @fee/api-client generate
+1. **Export OpenAPI** (no Postgres/Redis required — uses EF InMemory test host):
+
+   ```powershell
+   pwsh ./scripts/export-openapi.ps1
+   ```
+
+   Writes `packages/api-client/openapi.json`.
+
+2. **Generate types**:
+
+   ```powershell
+   pnpm --filter @fee/api-client generate
+   # or: pwsh ./scripts/generate-api-client.ps1
+   ```
+
+   Writes `packages/api-client/src/generated/schema.d.ts` (committed).
+
+3. **CI**: regenerates from the committed `openapi.json` and fails if the working tree differs.
+
+## Usage
+
+```ts
+import type { paths, ApiError, ApiErrorEnvelope } from "@fee/api-client";
+import { parseApiError } from "@fee/api-client";
 ```
 
-Expected pipeline (P0 stub → P1):
-
-1. Host exports `openapi/v1.json` (or `/swagger/v1/swagger.json`).
-2. Generator (e.g. `openapi-typescript` or NSwag) writes into `src/generated/`.
-3. Apps import only from `@fee/api-client`.
-
-## Status
-
-P0: placeholder only. Calling `assertGeneratedClient()` throws until generation exists.
-
-## Align with CONTRACT
-
-When Agent S merges `CONTRACT.md`, regenerate and confirm error payload + enums
-match `packages/validation`.
+`parseApiError` is re-exported from `@fee/validation` and always yields a usable
+CONTRACT section 3 message (never silent/empty).

@@ -27,6 +27,10 @@ public static class DomainEvents
     public const string PaymentAttemptCreated = "PaymentAttemptCreated";
     public const string PaymentSucceeded = "PaymentSucceeded";
     public const string PaymentFailed = "PaymentFailed";
+    public const string PaymentReversed = "PaymentReversed";
+    public const string DefermentRequested = "DefermentRequested";
+    public const string DefermentApproved = "DefermentApproved";
+    public const string DefermentRejected = "DefermentRejected";
     public const string ClearanceChanged = "ClearanceChanged";
     public const string ImportJobCompleted = "ImportJobCompleted";
     public const string OfflinePaymentRecorded = "OfflinePaymentRecorded";
