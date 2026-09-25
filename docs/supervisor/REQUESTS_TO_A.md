@@ -16,6 +16,9 @@ Owned by **S**. A implements; A does not edit this file to “close” a request
 | R-A-010 | **Done** (P0 partial vs plan) | Cross-tenant **EF global query filter** isolation tests in CI (InMemory). PostgreSQL **RLS** proof still deferred until Postgres available. | Plan §13 / §17 |
 | R-A-011 | **Partial** | OTP + portal password login work in integration tests. Staging Postgres/Redis/SMS/TOTP still required for plan §17 “login on staging”. | Plan §17 P0 gate |
 | R-A-012 | **Open** | When Docker/Postgres available: add RLS isolation test + Hangfire PG storage smoke + staging OTP/portal login checklist | Plan §5.3, §17 |
+| R-A-013 | **Open** | Extend `StatusPill` for CONTRACT §2.4 Import job statuses: `Uploaded`, `Validating`, `Validated`, `FailedValidation`, `Committing`, `Succeeded`, `Failed`, `Reverted` (Import `Succeeded`/`Failed` must not collide with PaymentAttempt — use kind prefix or separate `ImportStatusPill` export). | CONTRACT §2.4 · E→S-1 |
+| R-A-014 | **Open** | Add Invoice `Draft` to `StatusPillKind`. | CONTRACT §2.2 · E→S-2 |
+| R-A-015 | **Open** | Add shared `ConfirmDialog` in `packages/ui` with optional required `reason` field for destructive financial confirms (portal density). | DESIGN §9 · E→S-4 |
 
 ### A's optional asks to S (`REQUESTS_TO_S.md`)
 
