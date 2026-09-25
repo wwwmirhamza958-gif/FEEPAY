@@ -1,0 +1,24 @@
+---
+description: Design mindset and rules for any change to how the Fee Platform looks, reads, moves or is tapped (parent web, institution portal, native apps, packages/ui).
+globs: apps/parent-web/**, apps/institution-portal/**, apps/platform-admin/**, apps/mobile/**, packages/ui/**, **/*.tsx, **/*.css
+alwaysApply: false
+---
+
+# Design supervisor: always on for UI work
+
+Before any UI change, read `DESIGN_SUPERVISOR.md` **§0 (the one-page card)** and then only the section for your screen (§6.x) or component (§5.x). The file is owned by the Supervisor (S). Request changes to it; never edit it.
+
+Non-negotiables (details in the file):
+- One primary action per screen, in a sticky bottom bar on mobile. The label is the verb plus the amount ("Pay Rs 71,250").
+- Tokens only. No raw hex, px spacing off the 4-pt scale, raw `ms`, `transition: all` or `ease-in`.
+- The Pay screen shows the tenant's highest channel tier as the default, with the rest under "Other ways to pay". Never build our own card field. Never use a WebView for checkout.
+- Tenant brand colour is for identity only (logo chip or band). Action and status colours are identical for every tenant.
+- Every state is designed: loading (skeleton), empty, error (rendered from the CONTRACT.md error payload, never silent), offline, pending, success.
+- Urdu RTL is first-class. Use logical properties only (`ms-/me-/ps-/pe-`) and never clip Noto Nastaliq Urdu.
+- Motion: under 300 ms, `--ease-out`, transform and opacity only, respect reduced motion. **No animation in the portal beyond press and overlay entry. Never animate keyboard actions.**
+- Touch targets at least 44 px, body text at least 16 px, contrast at least 4.5:1 in both themes, and a status is never shown by colour alone.
+- Status words come from `CONTRACT.md`. Never invent them. Never show tax lines (deferred).
+- Do not re-run ui-ux-pro-max `--design-system`. The system is already decided. Use focused `--domain`/`--stack` queries only.
+- Search claude-mem for prior design decisions before re-deriving them (§13).
+
+A screen is done only when it passes the Design Gate in §11.
