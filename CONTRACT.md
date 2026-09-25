@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Owned by** | Agent **S** (Supervisor) only |
-| **Version** | **v1.1** — P0 Foundation (OpenAPI path frozen) |
+| **Version** | **v1.2** — P1 (`LATE_FEE` head code) |
 | **Companion** | `FEE_PLATFORM_IMPLEMENTATION_PLAN.md` v0.2 · `DESIGN_SUPERVISOR.md` v1.0 |
 | **Rule** | Any agent that edits this file has its work **rejected for that phase**. Request a change; do not patch locally. |
 
@@ -382,8 +382,11 @@ Intake example: `BSCS-2024` = "BS Computer Science — 2024 intake".
 | `TRANSPORT` | Transport | false | false | false | false |
 | `SECURITY` | Security Deposit | true | false | false | true |
 | `REPEAT` | Repeat Course | false | true | false | false |
+| `LATE_FEE` | Late fee | false | false | false | false |
 
 `taxable_for_236I` may be set in seed for future use. **No tax rules, tax lines, or tax UI** consume it in P0–P1 (§7.4 / §8).
+
+**Adjustment / system heads:** Late-fee lines and similar system-generated adjustment heads use `LATE_FEE` (B→S-1). Agents must not invent synonyms (`LATE`, `PENALTY`, etc.).
 
 ### 5.6 Sample academic people (anonymised)
 
