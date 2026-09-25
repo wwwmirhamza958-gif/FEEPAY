@@ -19,6 +19,8 @@ Owned by **S**. A implements; A does not edit this file to “close” a request
 | R-A-013 | **Open** | Extend `StatusPill` for CONTRACT §2.4 Import job statuses: `Uploaded`, `Validating`, `Validated`, `FailedValidation`, `Committing`, `Succeeded`, `Failed`, `Reverted` (Import `Succeeded`/`Failed` must not collide with PaymentAttempt — use kind prefix or separate `ImportStatusPill` export). | CONTRACT §2.4 · E→S-1 |
 | R-A-014 | **Open** | Add Invoice `Draft` to `StatusPillKind`. | CONTRACT §2.2 · E→S-2 |
 | R-A-015 | **Open** | Add shared `ConfirmDialog` in `packages/ui` with optional required `reason` field for destructive financial confirms (portal density). | DESIGN §9 · E→S-4 |
+| R-A-016 | **Open** | Replace portal `X-Tenant-Id` stub with session→tenant resolution for portal auth (P1 accepted header stub per C→S-2). | C→S-2 · Plan §5.3 |
+| R-A-017 | **Open** | Official seed runner must call `AcademicPilotSeed` (C) alongside Identity `PilotSeed` constants. | C→S-3 · CONTRACT §5 |
 
 ### A's optional asks to S (`REQUESTS_TO_S.md`)
 
