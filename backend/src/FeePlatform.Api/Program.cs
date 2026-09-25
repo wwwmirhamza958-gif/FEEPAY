@@ -1,5 +1,8 @@
 using FeePlatform.Api.Auth;
+using FeePlatform.Api.Billing;
+using FeePlatform.Api.Integrations;
 using FeePlatform.Api.OpenApi;
+using FeePlatform.Api.Tenancy;
 using FeePlatform.Infrastructure;
 using FeePlatform.Infrastructure.Outbox;
 using FluentValidation;
@@ -47,6 +50,7 @@ try
     var app = builder.Build();
 
     app.UseSerilogRequestLogging();
+    app.UseMiddleware<TenantHeaderMiddleware>();
 
     // OpenAPI for client generation (CONTRACT §9.1). Available in Development/Testing; Production opts in via config.
     var mapOpenApi = !app.Environment.IsProduction()
@@ -63,6 +67,8 @@ try
         .WithTags("System");
 
     app.MapAuthStubs();
+    app.MapBillingEndpoints();
+    app.MapImportEndpoints();
 
     app.MapPost("/internal/outbox/dispatch", async (IOutboxDispatcher dispatcher, CancellationToken ct) =>
     {

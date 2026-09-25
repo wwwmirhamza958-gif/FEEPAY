@@ -68,6 +68,20 @@ CI regenerates from the committed `openapi.json` and fails if `src/generated/` d
 - Production TOTP verification (not bypass)
 - Seeded portal users + SMS delivery for parent OTP on staging
 
+## P1 Billing & data (Agent C)
+
+Academic / Billing / Integrations domain APIs — route list in `backend/src/Modules/Billing/README.md`.
+
+```powershell
+# Example (InMemory test host via WebApplicationFactory or local API with Database:Provider=InMemory)
+# Header: X-Tenant-Id: 11111111-1111-1111-1111-111111111111
+POST /api/v1/billing/preview  { "termId": "..." }
+POST /api/v1/billing/issue    { "termId": "...", "dueDate": "2026-10-15" }
+POST /api/v1/imports/jobs     multipart entity=students + file
+```
+
+Migration stub: `backend/migrations/002_p1_academic_billing_integrations.sql`. FeeEngine: local `IFeeEngine` + `StubFeeEngine` until B merges (`docs/supervisor/REQUESTS_TO_B.md`).
+
 ## CONTRACT.md
 
 Owned by Agent S. Agents must not edit it. Align packages and APIs to the published contract.

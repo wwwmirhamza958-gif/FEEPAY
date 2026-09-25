@@ -16,6 +16,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Modules\IdentityTenancy\FeePlatform.Modules.IdentityTenancy.csproj" />
     <ProjectReference Include="..\Modules\Audit\FeePlatform.Modules.Audit.csproj" />
+    <ProjectReference Include="..\Modules\Academic\FeePlatform.Modules.Academic.csproj" />
+    <ProjectReference Include="..\Modules\Billing\FeePlatform.Modules.Billing.csproj" />
+    <ProjectReference Include="..\Modules\Integrations\FeePlatform.Modules.Integrations.csproj" />
+    <ProjectReference Include="..\Modules\FeeEngine\FeePlatform.Modules.FeeEngine.csproj" />
   </ItemGroup>
 
 </Project>
