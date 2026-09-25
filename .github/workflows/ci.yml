@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "agent/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  frontend:
+    name: Frontend (pnpm)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      - run: pnpm run test
+
+  backend:
+    name: Backend (.NET)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - name: Restore
+        run: dotnet restore backend/FeePlatform.slnx
+      - name: Build
+        run: dotnet build backend/FeePlatform.slnx --no-restore -c Release
+      - name: Guard forbidden tooling
+        run: |
+          if grep -RInE 'Database\.Migrate\(|AutoMapper|MediatR|EPPlus' backend --exclude-dir=obj --exclude-dir=bin; then
+            echo "Forbidden tooling reference found"
+            exit 1
+          fi
+          echo "Forbidden-tooling guard passed"

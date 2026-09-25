@@ -1,0 +1,40 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FeePlatform.Api/FeePlatform.Api.csproj" />
+    <Project Path="src/FeePlatform.Infrastructure/FeePlatform.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Academic/">
+    <Project Path="src/Modules/Academic/FeePlatform.Modules.Academic.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Audit/">
+    <Project Path="src/Modules/Audit/FeePlatform.Modules.Audit.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Billing/">
+    <Project Path="src/Modules/Billing/FeePlatform.Modules.Billing.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Clearance/">
+    <Project Path="src/Modules/Clearance/FeePlatform.Modules.Clearance.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/FeeEngine/">
+    <Project Path="src/Modules/FeeEngine/FeePlatform.Modules.FeeEngine.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/IdentityTenancy/">
+    <Project Path="src/Modules/IdentityTenancy/FeePlatform.Modules.IdentityTenancy.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Integrations/">
+    <Project Path="src/Modules/Integrations/FeePlatform.Modules.Integrations.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Notifications/">
+    <Project Path="src/Modules/Notifications/FeePlatform.Modules.Notifications.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Payments/">
+    <Project Path="src/Modules/Payments/FeePlatform.Modules.Payments.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Reporting/">
+    <Project Path="src/Modules/Reporting/FeePlatform.Modules.Reporting.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FeePlatform.Api.Tests/FeePlatform.Api.Tests.csproj" />
+  </Folder>
+</Solution>

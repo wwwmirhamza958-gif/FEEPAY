@@ -1,0 +1,135 @@
+/**
+ * Design tokens from DESIGN_SUPERVISOR.md §3.2–§3.5
+ * Feature apps MUST consume these — no raw hex / raw ms in app code.
+ * Agent A owns implementation; S owns the values (request-only edits to DESIGN_SUPERVISOR).
+ */
+
+:root {
+  /* Colour — light (default parent surfaces) */
+  --canvas: #f7f7f4;
+  --surface: #ffffff;
+  --surface-sunken: #f1f2ef;
+  --ink: #0f172a;
+  --ink-secondary: #475569;
+  --ink-tertiary: #64748b;
+  --border: #e4e6e1;
+  --border-strong: #cbd0c8;
+  --accent: #1d4ed8;
+  --accent-soft: #eef2ff;
+  --success: #15803d;
+  --success-soft: #ecfdf3;
+  --warning: #b45309;
+  --warning-soft: #fff7e6;
+  --danger: #b91c1c;
+  --danger-soft: #fef2f2;
+  --on-ink: #ffffff;
+
+  /* Dark theme (portal default / parent optional) — §3.2 */
+  --dark-canvas: #0b1120;
+  --dark-surface: #111827;
+  --dark-surface-raised: #1f2937;
+
+  /* Spacing — 4-pt grid */
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-48: 48px;
+  --space-64: 64px;
+
+  /* Radius */
+  --radius-8: 8px;
+  --radius-12: 12px;
+  --radius-16: 16px;
+  --radius-24: 24px;
+  --radius-full: 9999px;
+
+  /* Elevation — three levels only */
+  --shadow-1: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.06);
+  --shadow-2: 0 4px 12px rgb(15 23 42 / 0.08), 0 1px 3px rgb(15 23 42 / 0.06);
+  --shadow-3: 0 16px 40px rgb(15 23 42 / 0.16);
+
+  /* Z-index scale */
+  --z-base: 0;
+  --z-sticky-header: 10;
+  --z-sticky-action: 20;
+  --z-sheet: 40;
+  --z-dialog: 50;
+  --z-toast: 60;
+
+  /* Type scale (mobile) */
+  --font-display-amount: 600 40px/44px var(--font-heading);
+  --font-title-1: 600 24px/32px var(--font-heading);
+  --font-title-2: 600 20px/28px var(--font-heading);
+  --font-body: 400 16px/24px var(--font-body);
+  --font-body-strong: 600 16px/24px var(--font-body);
+  --font-label: 500 14px/20px var(--font-body);
+  --font-micro: 500 12px/16px var(--font-body);
+
+  /* Font families — set by next/font in apps; fallbacks here */
+  --font-heading: "Lexend", system-ui, sans-serif;
+  --font-body: "Source Sans 3", system-ui, sans-serif;
+  --font-urdu: "Noto Nastaliq Urdu", serif;
+
+  /* Motion — §3.5 (ease-in banned; never transition: all) */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-press: 140ms;
+  --dur-fast: 160ms;
+  --dur-base: 220ms;
+  --dur-sheet: 320ms;
+  --dur-exit: 150ms;
+
+  /* Tenant identity colour — logo chip / 3px band ONLY, never button fill */
+  --tenant-brand: var(--accent);
+}
+
+[dir="rtl"] {
+  /* Nastaliq needs line-height ≥ 2.0 and extra vertical padding */
+  --font-body: 400 16px/2 var(--font-urdu);
+  --font-body-strong: 600 16px/2 var(--font-urdu);
+  --font-label: 500 14px/2 var(--font-urdu);
+  --font-title-1: 600 24px/2 var(--font-urdu);
+  --font-title-2: 600 20px/2 var(--font-urdu);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-press: 0ms;
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-sheet: 0ms;
+    --dur-exit: 0ms;
+  }
+}
+
+.fee-canvas {
+  background-color: var(--canvas);
+  color: var(--ink);
+  font: var(--font-body);
+  min-height: 100dvh;
+}
+
+.fee-money {
+  font-variant-numeric: tabular-nums;
+  unicode-bidi: isolate;
+}
+
+.fee-tenant-band {
+  border-block-start: 3px solid var(--tenant-brand);
+}
+
+.fee-tenant-chip {
+  inline-size: 40px;
+  block-size: 40px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+}
