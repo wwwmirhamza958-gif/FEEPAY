@@ -5,6 +5,7 @@ using FeePlatform.Modules.Audit;
 using FeePlatform.Modules.Billing;
 using FeePlatform.Modules.IdentityTenancy;
 using FeePlatform.Modules.Integrations;
+using FeePlatform.Modules.Payments;
 using Microsoft.EntityFrameworkCore;
 using AcademicProgram = FeePlatform.Modules.Academic.Program;
 
@@ -47,6 +48,15 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ITenant
     public DbSet<PreviewRun> PreviewRuns => Set<PreviewRun>();
     public DbSet<PreviewStudentResult> PreviewStudentResults => Set<PreviewStudentResult>();
 
+    // Payments
+    public DbSet<PaymentAttempt> PaymentAttempts => Set<PaymentAttempt>();
+    public DbSet<PaymentReceipt> PaymentReceipts => Set<PaymentReceipt>();
+    public DbSet<ReceiptSequence> ReceiptSequences => Set<ReceiptSequence>();
+    public DbSet<PayLink> PayLinks => Set<PayLink>();
+    public DbSet<TenantAdapterConfig> TenantAdapterConfigs => Set<TenantAdapterConfig>();
+    public DbSet<ReconciliationRun> ReconciliationRuns => Set<ReconciliationRun>();
+    public DbSet<ReconciliationException> ReconciliationExceptions => Set<ReconciliationException>();
+
     // Integrations
     public DbSet<ImportJob> ImportJobs => Set<ImportJob>();
     public DbSet<ImportRowError> ImportRowErrors => Set<ImportRowError>();
@@ -59,6 +69,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ITenant
         ConfigureIdentity(modelBuilder);
         ConfigureAcademic(modelBuilder);
         ConfigureBilling(modelBuilder);
+        ConfigurePayments(modelBuilder);
         ConfigureIntegrations(modelBuilder);
     }
 
@@ -361,6 +372,102 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ITenant
             e.ToTable("preview_student_results");
             e.HasKey(x => x.Id);
             e.Property(x => x.TotalAmount).HasPrecision(18, 2);
+            TenantFilter(e);
+        });
+    }
+
+    private void ConfigurePayments(ModelBuilder modelBuilder)
+    {
+        void TenantFilter<T>(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<T> e)
+            where T : class, ITenantScoped
+        {
+            e.HasQueryFilter(x =>
+                tenantContext.IsPlatformAdminBypass
+                || (tenantContext.TenantId != null && x.TenantId == tenantContext.TenantId));
+        }
+
+        modelBuilder.Entity<PaymentAttempt>(e =>
+        {
+            e.ToTable("payment_attempts");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.TenantId, x.IdempotencyKey }).IsUnique();
+            // Unique (adapter, gateway_txn_id) enforced in PaymentService when txn id is set —
+            // filtered unique indexes are provider-specific (Postgres migration later).
+            e.HasIndex(x => new { x.AdapterCode, x.GatewayTxnId });
+            e.HasIndex(x => new { x.TenantId, x.PayableType, x.PayableId, x.Status });
+            e.Property(x => x.PayableType).HasMaxLength(32);
+            e.Property(x => x.Status).HasMaxLength(32);
+            e.Property(x => x.AdapterCode).HasMaxLength(64);
+            e.Property(x => x.IdempotencyKey).HasMaxLength(128);
+            e.Property(x => x.Currency).HasMaxLength(3);
+            e.Property(x => x.Amount).HasPrecision(18, 2);
+            e.Property(x => x.CheckoutUrl).HasMaxLength(2048);
+            e.Property(x => x.GatewayRef).HasMaxLength(128);
+            e.Property(x => x.GatewayTxnId).HasMaxLength(128);
+            e.Property(x => x.FailureReasonCode).HasMaxLength(64);
+            TenantFilter(e);
+        });
+
+        modelBuilder.Entity<PaymentReceipt>(e =>
+        {
+            e.ToTable("payment_receipts");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.TenantId, x.ReceiptNumber }).IsUnique();
+            e.HasIndex(x => x.VerifyToken).IsUnique();
+            e.Property(x => x.Amount).HasPrecision(18, 2);
+            e.Property(x => x.Currency).HasMaxLength(3);
+            e.Property(x => x.Channel).HasMaxLength(64);
+            e.Property(x => x.GatewayTxnId).HasMaxLength(128);
+            e.Property(x => x.StudentInitials).HasMaxLength(16);
+            e.Property(x => x.InstitutionName).HasMaxLength(256);
+            e.Property(x => x.VerifyToken).HasMaxLength(64);
+            TenantFilter(e);
+        });
+
+        modelBuilder.Entity<ReceiptSequence>(e =>
+        {
+            e.ToTable("receipt_sequences");
+            e.HasKey(x => x.TenantId);
+            TenantFilter(e);
+        });
+
+        modelBuilder.Entity<PayLink>(e =>
+        {
+            e.ToTable("pay_links");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.Token).IsUnique();
+            e.Property(x => x.Token).HasMaxLength(512);
+            TenantFilter(e);
+        });
+
+        modelBuilder.Entity<TenantAdapterConfig>(e =>
+        {
+            e.ToTable("tenant_adapter_configs");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.TenantId, x.AdapterCode }).IsUnique();
+            e.Property(x => x.AdapterCode).HasMaxLength(64);
+            e.Property(x => x.SecretRef).HasMaxLength(256);
+            TenantFilter(e);
+        });
+
+        modelBuilder.Entity<ReconciliationRun>(e =>
+        {
+            e.ToTable("reconciliation_runs");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.AdapterCode).HasMaxLength(64);
+            e.HasMany(x => x.Exceptions).WithOne().HasForeignKey(x => x.ReconciliationRunId);
+            TenantFilter(e);
+        });
+
+        modelBuilder.Entity<ReconciliationException>(e =>
+        {
+            e.ToTable("reconciliation_exceptions");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.ExceptionType).HasMaxLength(64);
+            e.Property(x => x.GatewayTxnId).HasMaxLength(128);
+            e.Property(x => x.GatewayAmount).HasPrecision(18, 2);
+            e.Property(x => x.PlatformAmount).HasPrecision(18, 2);
+            e.Property(x => x.Detail).HasMaxLength(1024);
             TenantFilter(e);
         });
     }
