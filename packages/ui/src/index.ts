@@ -6,6 +6,15 @@ export {
   type StatusTone,
 } from "./components/StatusPill";
 export {
+  ImportStatusPill,
+  type ImportStatusPillProps,
+  type ImportStatusPillKind,
+} from "./components/ImportStatusPill";
+export {
+  ConfirmDialog,
+  type ConfirmDialogProps,
+} from "./components/ConfirmDialog";
+export {
   Amount,
   Skeleton,
   EmptyState,

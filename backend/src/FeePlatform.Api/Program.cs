@@ -5,6 +5,8 @@ using FeePlatform.Api.OpenApi;
 using FeePlatform.Api.Tenancy;
 using FeePlatform.Infrastructure;
 using FeePlatform.Infrastructure.Outbox;
+using FeePlatform.Infrastructure.Persistence;
+using FeePlatform.Infrastructure.Seed;
 using FluentValidation;
 using Hangfire;
 using Hangfire.PostgreSql;
@@ -61,6 +63,17 @@ try
     }
 
     // FORBIDDEN: Database.Migrate() at startup — migrations run via CI/CD or explicit CLI.
+
+    // Dev-only pilot seed on InMemory (R-A-017). Never runs against Postgres here.
+    var dbProvider = app.Configuration.GetValue<string>(DependencyInjection.DatabaseProviderKey)
+        ?? DependencyInjection.NpgsqlProvider;
+    if (app.Environment.IsDevelopment()
+        && string.Equals(dbProvider, DependencyInjection.InMemoryProvider, StringComparison.OrdinalIgnoreCase))
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await DevSeed.EnsureAppliedAsync(db);
+    }
 
     app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "FeePlatform.Api" }))
         .WithName("Health")
