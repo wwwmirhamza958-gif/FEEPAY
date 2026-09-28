@@ -3,3 +3,50 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .fee-display-amount {
+    font: var(--font-display-amount);
+  }
+
+  .fee-title-1 {
+    font: var(--font-title-1);
+  }
+
+  .fee-title-2 {
+    font: var(--font-title-2);
+  }
+}
+
+/* OTP wrong-code shake — transform only, DESIGN §6.1 / §7.3 */
+@keyframes fee-otp-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  16% {
+    transform: translateX(6px);
+  }
+  33% {
+    transform: translateX(-6px);
+  }
+  50% {
+    transform: translateX(6px);
+  }
+  66% {
+    transform: translateX(-6px);
+  }
+  83% {
+    transform: translateX(6px);
+  }
+}
+
+.fee-otp-shake {
+  animation: fee-otp-shake var(--dur-base) var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fee-otp-shake {
+    animation: none;
+  }
+}

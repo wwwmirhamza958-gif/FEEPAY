@@ -23,7 +23,11 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${lexend.variable} ${sourceSans.variable}`}>
+    <html
+      lang="en"
+      dir="ltr"
+      className={`${lexend.variable} ${sourceSans.variable}`}
+    >
       <body className="fee-canvas antialiased">{children}</body>
     </html>
   );
