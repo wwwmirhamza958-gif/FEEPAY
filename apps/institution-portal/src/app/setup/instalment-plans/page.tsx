@@ -10,7 +10,7 @@ import {
   Td,
   Th,
 } from "@/components/ui-bits";
-import { fetchInstalmentPlans } from "@/lib/mock/client";
+import { fetchInstalmentPlans } from "@/lib/api/client";
 import type { InstalmentPlan, LoadState } from "@/lib/types";
 
 export default function InstalmentPlansPage() {

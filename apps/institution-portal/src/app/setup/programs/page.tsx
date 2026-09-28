@@ -13,14 +13,14 @@ import {
   TextInput,
   Th,
 } from "@/components/ui-bits";
-import { createProgram, fetchPrograms } from "@/lib/mock/client";
+import { createProgram, fetchPrograms } from "@/lib/api/client";
 import type { LoadState, Program } from "@/lib/types";
 
 export default function ProgramsPage() {
   const [state, setState] = useState<LoadState<Program[]>>({ status: "loading" });
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
-  const [intake, setIntake] = useState("Fall 2026");
+  const [intake, setIntake] = useState("");
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(() => {
@@ -47,6 +47,7 @@ export default function ProgramsPage() {
     }
     setCode("");
     setName("");
+    setIntake("");
     load();
   }
 
@@ -54,7 +55,7 @@ export default function ProgramsPage() {
     <>
       <PageHeader
         title="Programs & intakes"
-        description="Canonical academic programs and intake labels used by fee schedules."
+        description="Canonical academic programs. External id is optional metadata from the ERP."
         primaryAction={
           <Button
             size="portal"
@@ -79,17 +80,15 @@ export default function ProgramsPage() {
             <TextInput id="prog-name" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="sm:col-span-3">
-            <FieldLabel htmlFor="prog-intake">Intake</FieldLabel>
+            <FieldLabel htmlFor="prog-ext">External id (optional)</FieldLabel>
             <TextInput
-              id="prog-intake"
+              id="prog-ext"
               value={intake}
               onChange={(e) => setIntake(e.target.value)}
+              placeholder="ERP-PROG-…"
             />
           </div>
         </div>
-        <p className="mt-[var(--space-8)] text-[14px] text-ink-tertiary">
-          TODO: POST /api/v1/academic/programs
-        </p>
       </Panel>
 
       {state.status === "loading" ? <TableSkeleton /> : null}
@@ -105,7 +104,7 @@ export default function ProgramsPage() {
             <tr>
               <Th>Code</Th>
               <Th>Name</Th>
-              <Th>Intake</Th>
+              <Th>External id</Th>
             </tr>
           </thead>
           <tbody>

@@ -12,7 +12,7 @@ import {
   TextInput,
   Th,
 } from "@/components/ui-bits";
-import { searchStudents } from "@/lib/mock/client";
+import { searchStudents } from "@/lib/api/client";
 import type { LoadState, StudentRow } from "@/lib/types";
 
 export default function StudentsPage() {
@@ -33,7 +33,7 @@ export default function StudentsPage() {
     <>
       <PageHeader
         title="Student search"
-        description="Stub list for P1. Student 360 lands after Billing APIs expose enrolments and statements."
+        description="Search pilot students by name or external id. Student 360 lands after enrolments and statements are exposed in depth."
       />
       <MockBanner />
 

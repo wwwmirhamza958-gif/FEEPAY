@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@fee/ui";
+import { Button, EmptyState, ErrorState } from "@fee/ui";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import {
@@ -10,23 +10,45 @@ import {
   Panel,
   TextInput,
 } from "@/components/ui-bits";
+import { submitAdjustment } from "@/lib/api/client";
 
 /**
- * Adjustments entry shell — no Billing EF tables invented here.
- * TODO: POST /api/v1/billing/adjustments once C publishes.
+ * Adjustments — POST /api/v1/billing/adjustments (R-C-E-014).
+ * Requires an Issued invoice id; confirm + reason for audit.
  */
 export default function AdjustmentsPage() {
-  const [studentNumber, setStudentNumber] = useState("");
+  const [invoiceId, setInvoiceId] = useState("");
+  const [feeHeadCode, setFeeHeadCode] = useState("TUITION");
   const [amount, setAmount] = useState("");
-  const [note, setNote] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [reason, setReason] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const canSubmit =
-    studentNumber.trim().length > 0 &&
-    /^-?\d+\.\d{2}$/.test(amount.trim()) &&
-    note.trim().length > 0;
+    /^[0-9a-fA-F-]{36}$/.test(invoiceId.trim()) &&
+    feeHeadCode.trim().length > 0 &&
+    /^-?\d+\.\d{2}$/.test(amount.trim());
+
+  async function onConfirm() {
+    setSubmitting(true);
+    setErrorMsg(null);
+    const res = await submitAdjustment({
+      invoiceId: invoiceId.trim(),
+      feeHeadCode: feeHeadCode.trim().toUpperCase(),
+      amount: amount.trim(),
+      reason: reason.trim(),
+    });
+    setSubmitting(false);
+    if (!res.ok) {
+      setErrorMsg(res.error.error.message);
+      setConfirmOpen(false);
+      return;
+    }
+    setConfirmOpen(false);
+    setSaved(true);
+  }
 
   return (
     <>
@@ -39,6 +61,8 @@ export default function AdjustmentsPage() {
             disabled={!canSubmit}
             onClick={() => {
               setReason("");
+              setSaved(false);
+              setErrorMsg(null);
               setConfirmOpen(true);
             }}
           >
@@ -51,16 +75,27 @@ export default function AdjustmentsPage() {
       <Panel className="max-w-xl">
         <div className="space-y-[var(--space-16)]">
           <div>
-            <FieldLabel htmlFor="adj-student">Student number</FieldLabel>
+            <FieldLabel htmlFor="adj-invoice">Invoice id</FieldLabel>
             <TextInput
-              id="adj-student"
-              value={studentNumber}
-              onChange={(e) => setStudentNumber(e.target.value)}
+              id="adj-invoice"
+              value={invoiceId}
+              onChange={(e) => setInvoiceId(e.target.value)}
+              placeholder="Guid of an Issued invoice"
+              className="font-mono text-[14px]"
+            />
+          </div>
+          <div>
+            <FieldLabel htmlFor="adj-head">Fee head code</FieldLabel>
+            <TextInput
+              id="adj-head"
+              value={feeHeadCode}
+              onChange={(e) => setFeeHeadCode(e.target.value)}
+              placeholder="TUITION"
             />
           </div>
           <div>
             <FieldLabel htmlFor="adj-amount">
-              Amount (decimal string, e.g. −3500.00)
+              Amount (decimal string, e.g. 50000.00)
             </FieldLabel>
             <TextInput
               id="adj-amount"
@@ -68,25 +103,22 @@ export default function AdjustmentsPage() {
               onChange={(e) => setAmount(e.target.value)}
               inputMode="decimal"
               className="tabular-nums"
-              placeholder="-3500.00"
-            />
-          </div>
-          <div>
-            <FieldLabel htmlFor="adj-note">Internal note</FieldLabel>
-            <TextInput
-              id="adj-note"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
+              placeholder="50000.00"
             />
           </div>
         </div>
-        <p className="mt-[var(--space-16)] text-[14px] text-ink-tertiary">
-          TODO: POST /api/v1/billing/adjustments — supersedes invoice per CONTRACT §2.2
-        </p>
+        {errorMsg ? (
+          <div className="mt-[var(--space-16)]">
+            <ErrorState message={errorMsg} onRetry={() => setErrorMsg(null)} />
+          </div>
+        ) : null}
         {saved ? (
           <p className="mt-[var(--space-12)] text-[14px] text-success" role="status">
-            Adjustment recorded locally (mock). No ledger write until C API exists.
+            Adjustment posted. Original invoice is Superseded.
           </p>
+        ) : null}
+        {!canSubmit && !errorMsg ? (
+          <EmptyState title="Enter a valid invoice id, fee head, and amount (two decimal places)." />
         ) : null}
       </Panel>
 
@@ -97,11 +129,9 @@ export default function AdjustmentsPage() {
         reason={reason}
         onReasonChange={setReason}
         confirmLabel="Post adjustment"
+        confirming={submitting}
         onCancel={() => setConfirmOpen(false)}
-        onConfirm={() => {
-          setConfirmOpen(false);
-          setSaved(true);
-        }}
+        onConfirm={() => void onConfirm()}
       />
     </>
   );

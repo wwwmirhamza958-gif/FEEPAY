@@ -1,6 +1,7 @@
 "use client";
 
 import { EmptyState, ErrorState } from "@fee/ui";
+import { CircleDashed } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
   MockBanner,
@@ -10,7 +11,7 @@ import {
   Td,
   Th,
 } from "@/components/ui-bits";
-import { fetchFeeSchedules } from "@/lib/mock/client";
+import { fetchFeeSchedules } from "@/lib/api/client";
 import type { FeeScheduleVersion, LoadState } from "@/lib/types";
 
 export default function FeeSchedulesPage() {
@@ -58,7 +59,16 @@ export default function FeeSchedulesPage() {
                 <Td>{s.name}</Td>
                 <Td>v{s.version}</Td>
                 <Td>{s.effectiveFrom}</Td>
-                <Td>{s.status}</Td>
+                <Td>
+                  {/* TODO: use StatusPill Draft when @fee/ui exports it (Agent A). */}
+                  <span
+                    className="inline-flex items-center gap-[var(--space-4)] rounded-fee-8 bg-surface-sunken px-[var(--space-8)] py-[var(--space-4)] text-[14px] font-medium text-ink-secondary"
+                    role="status"
+                  >
+                    <CircleDashed size={16} strokeWidth={1.75} aria-hidden="true" />
+                    {s.status}
+                  </span>
+                </Td>
               </tr>
             ))}
           </tbody>

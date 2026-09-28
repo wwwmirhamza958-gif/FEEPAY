@@ -10,7 +10,7 @@ import {
   TableSkeleton,
   TextInput,
 } from "@/components/ui-bits";
-import { fetchBranding, saveBranding } from "@/lib/mock/client";
+import { fetchBranding, saveBranding } from "@/lib/api/client";
 import type { BrandingConfig, LoadState } from "@/lib/types";
 
 export default function BrandingPage() {
@@ -42,7 +42,8 @@ export default function BrandingPage() {
       setState({ status: "error", error: res.error });
       return;
     }
-    setSavedMsg("Saved locally (mock). TODO: POST branding to C.");
+    setSavedMsg("Branding saved.");
+    load();
   }
 
   return (
@@ -103,8 +104,14 @@ export default function BrandingPage() {
             {state.data.brandColourTokenNote}
           </p>
           <p className="mt-[var(--space-8)] text-[14px] text-ink-tertiary">
-            Brand colour CSS: <code>{state.data.brandColourCssVar}</code> (set via
-            tenant config API — not a button fill).
+            Brand colour CSS: <code>{state.data.brandColourCssVar}</code>
+            {state.data.brandColourHex ? (
+              <>
+                {" "}
+                · API value <code>{state.data.brandColourHex}</code> (identity data
+                only — not a button fill).
+              </>
+            ) : null}
           </p>
 
           {savedMsg ? (
