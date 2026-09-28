@@ -113,13 +113,13 @@ export function HomeFamilyScreen() {
               type="button"
               className="w-full"
               onClick={() =>
-                router.push(`/students/${data.nextDue!.studentId}/statement`)
+                router.push(`/pay/${data.nextDue!.studentId}`)
               }
             >
               Pay next due · <Amount>{formatPkr(data.nextDue.amount)}</Amount>
             </Button>
             <p className="mt-[var(--space-8)] text-center font-[var(--font-micro)] text-ink-tertiary">
-              Opens the statement. Checkout arrives in P3.
+              No card number is entered in this app.
             </p>
           </StickyActionBar>
         ) : (

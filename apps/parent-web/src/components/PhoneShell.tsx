@@ -53,7 +53,7 @@ export function MockBanner() {
       className="bg-surface-sunken px-[var(--space-16)] py-[var(--space-8)] text-center font-[var(--font-micro)] text-ink-tertiary"
       role="note"
     >
-      Mock data — parent API pending (see REQUESTS_TO_C_FROM_F)
+      Mock data — parent API pending (see REQUESTS_TO_C_FROM_F / REQUESTS_TO_D)
     </p>
   );
 }

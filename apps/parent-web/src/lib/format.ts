@@ -65,3 +65,16 @@ export function formatCountdown(totalSeconds: number): string {
   const r = s % 60;
   return `${m}:${r.toString().padStart(2, "0")}`;
 }
+
+/** ISO datetime → "Mon 14 Oct · 3:45 pm" for receipts / history. */
+export function formatPaidAt(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const date = formatDueDate(iso.slice(0, 10));
+  const time = d.toLocaleTimeString("en-GB", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+  return `${date} · ${time}`;
+}

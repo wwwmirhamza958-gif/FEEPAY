@@ -120,7 +120,14 @@ export function StudentStatementScreen({ studentId }: { studentId: string }) {
     <ScreenBody
       footer={
         <StickyActionBar>
-          <Button type="button" className="w-full" disabled>
+          <Button
+            type="button"
+            className="w-full"
+            disabled={!hasPayable}
+            onClick={() => {
+              if (hasPayable) router.push(`/pay/${studentId}`);
+            }}
+          >
             {hasPayable ? (
               <>
                 Pay <Amount>{formatPkr(data.nextPayableAmount)}</Amount>
@@ -131,7 +138,7 @@ export function StudentStatementScreen({ studentId }: { studentId: string }) {
           </Button>
           <p className="mt-[var(--space-8)] text-center font-[var(--font-micro)] text-ink-tertiary">
             {hasPayable
-              ? "Checkout opens in P3 — no card entry here."
+              ? "No card number is entered in this app."
               : "Nothing left to pay for this term."}
           </p>
         </StickyActionBar>
