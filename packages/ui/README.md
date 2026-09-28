@@ -1,6 +1,6 @@
 # @fee/ui
 
-Design system shell for Fee Platform. Implements `DESIGN_SUPERVISOR.md` §3 tokens and §5.1–5.3 primitives.
+Design system shell for Fee Platform. Implements `DESIGN_SUPERVISOR.md` §3 tokens and §5.1–5.5 / §9 primitives.
 
 ## Tokens
 
@@ -16,10 +16,12 @@ Tailwind theme extension:
 import { feeTailwindTheme } from "@fee/ui/tailwind-preset";
 ```
 
-## Components (P0)
+## Components
 
 - `Button` — primary / secondary / ghost / destructive; press scale `0.97`; primary fill is `--ink`
-- `StatusPill` — tone + Lucide icon + label; status words must match `CONTRACT.md`
+- `StatusPill` — CONTRACT §2 invoice/payment/clearance kinds (includes Invoice `Draft`); icon + label
+- `ImportStatusPill` — CONTRACT §2.4 import job statuses (separate from PaymentAttempt Succeeded/Failed)
+- `ConfirmDialog` — centred dialog; optional required reason; portal-dense default; Escape + close
 
 ## Rules
 

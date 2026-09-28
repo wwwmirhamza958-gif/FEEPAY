@@ -22,6 +22,7 @@ export type StatusTone = "success" | "warning" | "danger" | "accent" | "neutral"
  * CONTRACT §2 + derived display statuses only — no free-text labels (CONTRACT §6.4.8).
  */
 export type StatusPillKind =
+  | "Draft"
   | "Paid"
   | "PartiallyPaid"
   | "Issued"
@@ -50,6 +51,7 @@ const kindConfig: Record<
   StatusPillKind,
   { tone: StatusTone; label: string; Icon: LucideIcon; spin?: boolean }
 > = {
+  Draft: { tone: "neutral", label: "Draft", Icon: CircleDashed },
   Paid: { tone: "success", label: "Paid", Icon: CheckCircle2 },
   PartiallyPaid: {
     tone: "accent",

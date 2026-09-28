@@ -24,6 +24,27 @@ No requests to change `DESIGN_SUPERVISOR.md` token values.
 
 ---
 
+## Agent A — Platform (P1 follow-up)
+
+Date: 2026-09-28
+Branch: `agent/a-p1-ui`
+
+### Closed this pass (implementation; S marks REQUESTS_TO_A)
+
+- R-A-013 — `ImportStatusPill` for CONTRACT §2.4 (no collide with PaymentAttempt Succeeded/Failed)
+- R-A-014 — Invoice `Draft` on `StatusPillKind`
+- R-A-015 — `ConfirmDialog` in `packages/ui` (optional required reason, portal density)
+- R-A-017 — `DevSeed` calls `AcademicPilotSeed.EnsureAppliedAsync` (Development + InMemory only)
+
+### Stays open — needs S / infra
+
+| ID | Why open |
+|---|---|
+| R-A-012 | No Docker/Postgres in this worktree; RLS + Hangfire PG smoke deferred. |
+| R-A-016 | Replacing portal `X-Tenant-Id` stub with session→tenant needs real portal auth binding (cookie/bearer session lookup) and safe rollout against staging Postgres — not a safe half-step on InMemory-only. Header stub remains per C→S-2 until auth hardening. |
+
+---
+
 ## Agent B — Fee engine (P1)
 
 Date: 2026-09-25
