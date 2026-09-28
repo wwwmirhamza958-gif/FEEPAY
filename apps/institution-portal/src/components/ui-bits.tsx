@@ -166,13 +166,15 @@ export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: nu
 }
 
 export function MockBanner() {
+  const mock = process.env.NEXT_PUBLIC_PORTAL_DATA === "mock";
   return (
     <p
       role="note"
       className="mb-[var(--space-16)] rounded-fee-8 border border-border bg-surface-sunken px-[var(--space-12)] py-[var(--space-8)] text-[14px] text-ink-secondary"
     >
-      Using local mock data until Agent C publishes Billing/Academic APIs. See{" "}
-      <code className="text-ink">docs/supervisor/REQUESTS_TO_C.md</code>.
+      {mock
+        ? "Using local mock data (NEXT_PUBLIC_PORTAL_DATA=mock)."
+        : "Live P1 API via /api/platform rewrite → NEXT_PUBLIC_API_BASE_URL. Fee-schedule / discount writes may return 501."}
     </p>
   );
 }

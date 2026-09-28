@@ -13,7 +13,7 @@ import {
   TextInput,
   Th,
 } from "@/components/ui-bits";
-import { createFeeHead, fetchFeeHeads } from "@/lib/mock/client";
+import { createFeeHead, fetchFeeHeads } from "@/lib/api/client";
 import type { FeeHead, LoadState } from "@/lib/types";
 
 export default function FeeHeadsPage() {
@@ -21,9 +21,11 @@ export default function FeeHeadsPage() {
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
+  const [writeError, setWriteError] = useState<string | null>(null);
 
   const load = useCallback(() => {
     setState({ status: "loading" });
+    setWriteError(null);
     void fetchFeeHeads().then(setState);
   }, []);
 
@@ -34,10 +36,12 @@ export default function FeeHeadsPage() {
   async function onCreate() {
     if (!code.trim() || !name.trim()) return;
     setSaving(true);
+    setWriteError(null);
     const res = await createFeeHead({ code: code.trim(), name: name.trim() });
     setSaving(false);
     if (!res.ok) {
-      setState({ status: "error", error: res.error });
+      // 501 from FeeEngine ownership — surface §3 error.message
+      setWriteError(res.error.error.message);
       return;
     }
     setCode("");
@@ -75,8 +79,13 @@ export default function FeeHeadsPage() {
           </div>
         </div>
         <p className="mt-[var(--space-8)] text-[14px] text-ink-tertiary">
-          TODO: POST /api/v1/billing/fee-heads — flag taxable_for_236I is stored but unused.
+          Catalog is read-only from FeeEngine in P1; create may return 501.
         </p>
+        {writeError ? (
+          <p className="mt-[var(--space-12)] text-[14px] text-danger" role="alert">
+            {writeError}
+          </p>
+        ) : null}
       </Panel>
 
       {state.status === "loading" ? <TableSkeleton /> : null}

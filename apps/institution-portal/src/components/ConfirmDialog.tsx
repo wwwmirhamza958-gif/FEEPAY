@@ -4,6 +4,8 @@ import { Button } from "@fee/ui";
 import { clsx } from "clsx";
 import { useEffect, useId, useRef, type ReactNode } from "react";
 
+// TODO: switch to shared ConfirmDialog from @fee/ui when Agent A exports it.
+
 type ConfirmDialogProps = {
   open: boolean;
   title: string;

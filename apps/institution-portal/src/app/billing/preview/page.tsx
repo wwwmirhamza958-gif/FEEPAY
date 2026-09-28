@@ -3,7 +3,7 @@
 import { Amount, Button, EmptyState, ErrorState } from "@fee/ui";
 import { formatPkr } from "@fee/money";
 import { AlertTriangle, CircleDashed } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import {
   FieldLabel,
@@ -13,24 +13,44 @@ import {
   TableShell,
   TableSkeleton,
   Td,
-  TextInput,
   Th,
 } from "@/components/ui-bits";
-import { issueStatements, runBillingPreview } from "@/lib/mock/client";
+import {
+  fetchTerms,
+  issueStatements,
+  runBillingPreview,
+  type AcademicTerm,
+} from "@/lib/api/client";
 import type { LoadState, PreviewRun } from "@/lib/types";
 
 export default function BillingPreviewPage() {
-  const [term, setTerm] = useState("Fall 2026");
+  const [terms, setTerms] = useState<LoadState<AcademicTerm[]>>({ status: "loading" });
+  const [termId, setTermId] = useState("");
   const [state, setState] = useState<LoadState<PreviewRun> | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [issuing, setIssuing] = useState(false);
   const [issuedMsg, setIssuedMsg] = useState<string | null>(null);
 
+  const loadTerms = useCallback(() => {
+    setTerms({ status: "loading" });
+    void fetchTerms().then((res) => {
+      setTerms(res);
+      if (res.status === "success" && res.data[0]) {
+        setTermId((current) => current || res.data[0]!.id);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    loadTerms();
+  }, [loadTerms]);
+
   async function onPreview() {
+    if (!termId) return;
     setIssuedMsg(null);
     setState({ status: "loading" });
-    const res = await runBillingPreview(term.trim() || "Fall 2026");
+    const res = await runBillingPreview(termId);
     setState(res);
   }
 
@@ -39,6 +59,7 @@ export default function BillingPreviewPage() {
     setIssuing(true);
     const res = await issueStatements({
       previewId: state.data.id,
+      termId: state.data.termId ?? termId,
       reason: reason.trim(),
     });
     setIssuing(false);
@@ -48,7 +69,7 @@ export default function BillingPreviewPage() {
       return;
     }
     setConfirmOpen(false);
-    setIssuedMsg(`Issued ${res.issuedCount} statements (mock). Status: Issued.`);
+    setIssuedMsg(`Issued ${res.issuedCount} statements. Status: Issued.`);
   }
 
   return (
@@ -62,6 +83,7 @@ export default function BillingPreviewPage() {
             variant={state?.status === "success" ? "secondary" : "primary"}
             onClick={() => void onPreview()}
             loading={state?.status === "loading"}
+            disabled={!termId}
           >
             Run preview
           </Button>
@@ -71,10 +93,31 @@ export default function BillingPreviewPage() {
 
       <Panel className="mb-[var(--space-24)] max-w-md">
         <FieldLabel htmlFor="term">Term</FieldLabel>
-        <TextInput id="term" value={term} onChange={(e) => setTerm(e.target.value)} />
-        <p className="mt-[var(--space-8)] text-[14px] text-ink-tertiary">
-          TODO: POST /api/v1/billing/preview-runs
-        </p>
+        {terms.status === "loading" ? (
+          <p className="text-[14px] text-ink-tertiary" aria-busy="true">
+            Loading terms…
+          </p>
+        ) : null}
+        {terms.status === "error" ? (
+          <ErrorState message={terms.error.error.message} onRetry={loadTerms} />
+        ) : null}
+        {terms.status === "empty" ? (
+          <EmptyState title="No terms available." />
+        ) : null}
+        {terms.status === "success" ? (
+          <select
+            id="term"
+            value={termId}
+            onChange={(e) => setTermId(e.target.value)}
+            className="w-full rounded-fee-8 border border-border-strong bg-surface px-[var(--space-12)] py-[var(--space-8)] text-[15px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            {terms.data.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name} ({t.code})
+              </option>
+            ))}
+          </select>
+        ) : null}
       </Panel>
 
       {!state ? (
@@ -144,6 +187,7 @@ export default function BillingPreviewPage() {
                     <Amount>{formatPkr(line.amount)}</Amount>
                   </Td>
                   <Td>
+                    {/* TODO: use StatusPill Draft when @fee/ui exports it (Agent A). */}
                     <span
                       className="inline-flex items-center gap-[var(--space-4)] rounded-fee-8 bg-surface-sunken px-[var(--space-8)] py-[var(--space-4)] text-[14px] font-medium text-ink-secondary"
                       role="status"

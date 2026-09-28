@@ -42,6 +42,8 @@ export type BrandingConfig = {
   brandColourTokenNote: string;
   /** Identity only — never used for buttons (§3.2). */
   brandColourCssVar: string;
+  /** From API branding payload — display only, never as a button fill. */
+  brandColourHex?: string;
 };
 
 export type StudentRow = {
@@ -82,6 +84,7 @@ export type PreviewLine = {
 
 export type PreviewRun = {
   id: string;
+  termId?: string;
   termLabel: string;
   totalAmount: string;
   lineCount: number;
