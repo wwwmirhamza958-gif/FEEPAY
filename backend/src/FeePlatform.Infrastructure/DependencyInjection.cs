@@ -3,11 +3,14 @@ using FeePlatform.Infrastructure.Auth;
 using FeePlatform.Infrastructure.Billing;
 using FeePlatform.Infrastructure.Integrations;
 using FeePlatform.Infrastructure.Outbox;
+using FeePlatform.Infrastructure.Payments;
 using FeePlatform.Infrastructure.Persistence;
 using FeePlatform.Infrastructure.Tenancy;
 using FeePlatform.Modules.Audit;
 using FeePlatform.Modules.FeeEngine.Api;
 using FeePlatform.Modules.Integrations.Erp;
+using FeePlatform.Modules.Payments;
+using FeePlatform.Modules.Payments.Adapters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -49,6 +52,16 @@ public static class DependencyInjection
         services.AddScoped<BillingService>();
         services.AddScoped<ImportWizardService>();
         services.AddSingleton<IErpConnector, StubErpConnector>();
+
+        services.Configure<PaymentsOptions>(configuration.GetSection(PaymentsOptions.SectionName));
+        services.AddScoped<IInvoicePaymentApplier, BillingInvoicePaymentApplier>();
+        services.AddScoped<IPayableLookup, BillingPayableLookup>();
+        services.AddScoped<PaymentService>();
+        services.AddSingleton<IPaymentAdapter, RaastP2mPilotAdapter>();
+        services.AddSingleton<IPaymentAdapter, JazzCashPilotAdapter>();
+        services.AddSingleton<IPaymentAdapter, EasypaisaPilotAdapter>();
+        services.AddSingleton<IPaymentAdapter, CardPspPilotAdapter>();
+        services.AddSingleton<IPaymentAdapter, BillerCnPilotAdapter>();
 
         var redisEnabled = configuration.GetValue("Redis:Enabled", defaultValue: true);
         if (redisEnabled)

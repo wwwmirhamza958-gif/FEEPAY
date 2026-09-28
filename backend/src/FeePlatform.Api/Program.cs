@@ -2,11 +2,13 @@ using FeePlatform.Api.Auth;
 using FeePlatform.Api.Billing;
 using FeePlatform.Api.Integrations;
 using FeePlatform.Api.OpenApi;
+using FeePlatform.Api.Payments;
 using FeePlatform.Api.Tenancy;
 using FeePlatform.Infrastructure;
 using FeePlatform.Infrastructure.Outbox;
 using FeePlatform.Infrastructure.Persistence;
 using FeePlatform.Infrastructure.Seed;
+using FeePlatform.Modules.Payments.Receipts;
 using FluentValidation;
 using Hangfire;
 using Hangfire.PostgreSql;
@@ -15,6 +17,9 @@ using Serilog;
 try
 {
     var builder = WebApplication.CreateBuilder(args);
+
+    // QuestPDF 2026 community license (required before generating receipts).
+    ReceiptPdfGenerator.EnsureCommunityLicense();
 
     // preserveStaticLogger: avoid "logger is already frozen" under WebApplicationFactory (multiple hosts).
     builder.Host.UseSerilog((ctx, cfg) => cfg
@@ -82,6 +87,7 @@ try
     app.MapAuthStubs();
     app.MapBillingEndpoints();
     app.MapImportEndpoints();
+    app.MapPaymentEndpoints();
 
     app.MapPost("/internal/outbox/dispatch", async (IOutboxDispatcher dispatcher, CancellationToken ct) =>
     {

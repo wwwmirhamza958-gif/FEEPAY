@@ -22,6 +22,7 @@
     <ProjectReference Include="..\Modules\Academic\FeePlatform.Modules.Academic.csproj" />
     <ProjectReference Include="..\Modules\Billing\FeePlatform.Modules.Billing.csproj" />
     <ProjectReference Include="..\Modules\Integrations\FeePlatform.Modules.Integrations.csproj" />
+    <ProjectReference Include="..\Modules\Payments\FeePlatform.Modules.Payments.csproj" />
   </ItemGroup>
 
 </Project>
