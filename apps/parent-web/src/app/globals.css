@@ -18,7 +18,103 @@
   }
 }
 
-/* OTP wrong-code shake — transform only, DESIGN §6.1 / §7.3 */
+/* Soft warm canvas — not flat template white */
+.fee-parent-atmosphere {
+  background-color: var(--canvas);
+  background-image:
+    radial-gradient(90% 50% at 0% 0%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 55%),
+    radial-gradient(70% 40% at 100% 0%, color-mix(in srgb, #0f766e 5%, transparent), transparent 50%),
+    linear-gradient(180deg, var(--surface-sunken) 0%, var(--canvas) 32%);
+}
+
+.fee-app-sidebar {
+  background:
+    linear-gradient(165deg, #0b1220 0%, #0f172a 48%, #0c1a2e 100%);
+  color: white;
+}
+
+.fee-app-header {
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.fee-app-bottom-nav {
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 -8px 24px rgb(15 23 42 / 0.04);
+}
+
+.fee-surface-card {
+  border-radius: var(--radius-16);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  border: 1px solid var(--border);
+}
+
+/* Amount hero — left ink rail, not purple glow */
+.fee-amount-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-16);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-2);
+}
+
+.fee-amount-hero::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--accent), #0f766e);
+}
+
+.fee-nav-tile {
+  border-radius: var(--radius-16);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-1);
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+.fee-nav-tile:active {
+  transform: scale(0.98);
+}
+
+.fee-nav-tile:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-2);
+}
+
+.fee-enter {
+  animation: fee-enter-up var(--dur-base) var(--ease-out) both;
+}
+
+.fee-enter-delay-1 {
+  animation-delay: 40ms;
+}
+
+.fee-enter-delay-2 {
+  animation-delay: 80ms;
+}
+
+@keyframes fee-enter-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes fee-otp-shake {
   0%,
   100% {
@@ -46,12 +142,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fee-otp-shake {
+  .fee-otp-shake,
+  .fee-enter,
+  .fee-enter-delay-1,
+  .fee-enter-delay-2 {
     animation: none;
   }
 }
 
-/* Payment pending ring — DESIGN §6.5: linear 900ms; suppressed under reduced motion */
 @keyframes fee-pending-spin {
   to {
     transform: rotate(360deg);

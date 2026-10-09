@@ -256,6 +256,14 @@ public static class AcademicPilotSeed
                 });
         }
 
+        // Keep pilot guardian mobile aligned with parent demo (+923001234567).
+        var guardian1 = await db.Set<Guardian>().IgnoreQueryFilters()
+            .FirstOrDefaultAsync(g => g.Id == Guardian1Id, ct);
+        if (guardian1 is not null && guardian1.MobileE164 != PilotSeed.GuardianMobileFake)
+        {
+            guardian1.MobileE164 = PilotSeed.GuardianMobileFake;
+        }
+
         await db.SaveChangesAsync(ct);
     }
 }

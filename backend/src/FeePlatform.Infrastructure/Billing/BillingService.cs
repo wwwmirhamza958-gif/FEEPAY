@@ -179,6 +179,74 @@ public sealed class BillingService(
         return new IssueBatchResultDto(resolvedTermId, issued.Count, issued);
     }
 
+    /// <summary>Issue a fee challan for one enrolled student in a term (Finance Add Student flow).</summary>
+    public async Task<InvoiceSummaryDto> IssueForStudentAsync(
+        Guid studentId,
+        Guid termId,
+        DateOnly? dueDate,
+        Guid? instalmentPlanId,
+        string reason,
+        CancellationToken ct = default)
+    {
+        var tenantId = RequireTenant();
+        var student = await db.Students.FirstOrDefaultAsync(s => s.Id == studentId, ct)
+            ?? throw new BillingDomainException("STUDENT_NOT_FOUND", "Student was not found.", "errors.student_not_found");
+
+        var term = await db.Terms.FirstOrDefaultAsync(t => t.Id == termId, ct)
+            ?? throw new BillingDomainException("TERM_NOT_FOUND", "Term was not found.", "errors.term_not_found");
+
+        var enrolments = await db.Enrolments
+            .Where(e => e.StudentId == studentId && e.TermId == termId && e.Status == EnrolmentStatuses.Enrolled)
+            .ToListAsync(ct);
+        if (enrolments.Count == 0)
+        {
+            throw new BillingDomainException(
+                "NO_ENROLMENTS",
+                "Student has no enrolments for this term.",
+                "errors.no_enrolments");
+        }
+
+        var alreadyIssued = await db.Invoices.AnyAsync(
+            i => i.StudentId == studentId
+                 && i.TermId == termId
+                 && i.Status != InvoiceStatuses.Superseded
+                 && i.Status != InvoiceStatuses.Draft,
+            ct);
+        if (alreadyIssued)
+        {
+            throw new BillingDomainException(
+                "ALREADY_ISSUED",
+                "A fee challan already exists for this student and term.",
+                "errors.already_issued");
+        }
+
+        var plan = instalmentPlanId is null
+            ? null
+            : await db.InstalmentPlans
+                .Include(p => p.Parts)
+                .FirstOrDefaultAsync(p => p.Id == instalmentPlanId, ct);
+
+        var courses = await db.Courses.AsNoTracking().ToDictionaryAsync(c => c.Id, ct);
+        var now = DateTimeOffset.UtcNow;
+        var issueDate = DateOnly.FromDateTime(now.UtcDateTime);
+        var effectiveDue = dueDate ?? term.EndDate;
+
+        var calc = CalculateForStudent(student, term.Code, enrolments, courses, isPreview: false);
+        if (calc.TotalAmount <= 0)
+        {
+            // Fallback flat challan when engine returns nothing (e.g. no matching rules).
+            calc = new CalculatedStatement(
+                [new CalculatedLine("TUITION", 71250.00m, "Tuition fee challan", "Charge", null)],
+                71250.00m);
+        }
+
+        var invoice = CreateIssuedInvoice(
+            tenantId, student.Id, termId, calc, effectiveDue, plan, issueDate, now,
+            previousInvoiceId: null, adjustmentOf: null, reason: reason);
+        await db.SaveChangesAsync(ct);
+        return ToSummary(invoice);
+    }
+
     public async Task<InvoiceDetailDto> GetInvoiceAsync(Guid invoiceId, CancellationToken ct = default)
     {
         RequireTenant();

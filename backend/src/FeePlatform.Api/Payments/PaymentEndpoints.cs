@@ -67,6 +67,10 @@ public static class PaymentEndpoints
         payments.MapPost("/sandbox/fake-complete/{attemptId:guid}", FakeComplete)
             .WithName("SandboxFakeComplete");
 
+        // Browser-friendly sandbox handoff: completes Tier-1 fake and returns to parent status.
+        payments.MapGet("/sandbox/fake-checkout/{attemptId:guid}", FakeCheckout)
+            .WithName("SandboxFakeCheckout");
+
         return endpoints;
     }
 
@@ -215,6 +219,24 @@ public static class PaymentEndpoints
         try
         {
             return Results.Ok(await payments.CompleteSandboxFakeAsync(attemptId, ct));
+        }
+        catch (PaymentsDomainException ex)
+        {
+            return DomainError(ex);
+        }
+    }
+
+    private static async Task<IResult> FakeCheckout(
+        Guid attemptId,
+        PaymentService payments,
+        IConfiguration configuration,
+        CancellationToken ct)
+    {
+        try
+        {
+            await payments.CompleteSandboxFakeAsync(attemptId, ct);
+            var parentBase = configuration["Payments:ParentWebBaseUrl"] ?? "http://localhost:3002";
+            return Results.Redirect($"{parentBase.TrimEnd('/')}/payments/attempts/{attemptId:D}");
         }
         catch (PaymentsDomainException ex)
         {

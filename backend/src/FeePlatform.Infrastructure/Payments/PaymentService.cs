@@ -164,13 +164,45 @@ public sealed class PaymentService(
 
     public async Task<PaymentAttemptDto> GetAttemptAsync(Guid attemptId, CancellationToken ct = default)
     {
-        RequireTenant();
-        var attempt = await db.PaymentAttempts.AsNoTracking().FirstOrDefaultAsync(a => a.Id == attemptId, ct)
+        // Allow lookup without ambient tenant when caller already authorized (parent session path).
+        var attempt = await db.PaymentAttempts.IgnoreQueryFilters().AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == attemptId, ct)
             ?? throw new PaymentsDomainException(
                 "RESOURCE_NOT_FOUND",
                 "We couldn't find that record.",
                 "errors.resource_not_found");
+
+        if (tenantContext.TenantId is Guid tid && tid != attempt.TenantId && !tenantContext.IsPlatformAdminBypass)
+        {
+            throw new PaymentsDomainException(
+                "RESOURCE_NOT_FOUND",
+                "We couldn't find that record.",
+                "errors.resource_not_found");
+        }
+
+        if (tenantContext.TenantId is null)
+            tenantContext.SetTenant(attempt.TenantId);
+
         return ToDto(attempt);
+    }
+
+    /// <summary>Parent / finance history — attempts for one student (caller must authorize).</summary>
+    public async Task<IReadOnlyList<PaymentAttemptDto>> ListAttemptsForStudentAsync(
+        Guid studentId,
+        CancellationToken ct = default)
+    {
+        var query = db.PaymentAttempts.IgnoreQueryFilters().AsNoTracking()
+            .Where(a => a.StudentId == studentId);
+
+        if (tenantContext.TenantId is Guid tid && !tenantContext.IsPlatformAdminBypass)
+            query = query.Where(a => a.TenantId == tid);
+
+        var attempts = await query
+            .OrderByDescending(a => a.CreatedAtUtc)
+            .Take(100)
+            .ToListAsync(ct);
+
+        return attempts.Select(ToDto).ToList();
     }
 
     public async Task<PaymentAttemptDto> HandleCallbackAsync(
@@ -589,12 +621,14 @@ public sealed class PaymentService(
                 "errors.payments_sandbox_not_configured");
         }
 
-        RequireTenant();
-        var attempt = await db.PaymentAttempts.FirstOrDefaultAsync(a => a.Id == attemptId, ct)
+        var attempt = await db.PaymentAttempts.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(a => a.Id == attemptId, ct)
             ?? throw new PaymentsDomainException(
                 "RESOURCE_NOT_FOUND",
                 "We couldn't find that record.",
                 "errors.resource_not_found");
+
+        tenantContext.SetTenant(attempt.TenantId);
 
         if (attempt.Status == PaymentAttemptStatuses.Succeeded)
             return ToDto(attempt);

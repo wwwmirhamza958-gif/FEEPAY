@@ -48,7 +48,7 @@ export const PORTAL_NAV: NavSection[] = [
     title: "Data",
     items: [
       { href: "/data/import", label: "Import wizard", icon: Database },
-      { href: "/data/students", label: "Student search", icon: Database },
+      { href: "/data/students", label: "Students", icon: Database },
     ],
   },
   {

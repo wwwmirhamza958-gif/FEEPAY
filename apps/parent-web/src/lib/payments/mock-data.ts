@@ -246,9 +246,11 @@ function ensureSeedHistory() {
   });
 }
 
-export function mockHistoryGroups(): PaymentHistoryGroup[] {
+export function mockHistoryGroups(
+  studentName?: string
+): PaymentHistoryGroup[] {
   ensureSeedHistory();
-  const items: PaymentHistoryItem[] = [...receiptStore.values()].map((r) => {
+  let items: PaymentHistoryItem[] = [...receiptStore.values()].map((r) => {
     const attempt = [...attemptStore.values()].find((a) => a.receiptId === r.id);
     return {
       id: attempt?.id ?? r.id,
@@ -257,7 +259,7 @@ export function mockHistoryGroups(): PaymentHistoryGroup[] {
       paidAt: r.paidAt,
       studentName: r.studentName,
       channelName: r.channelName,
-      status: "Succeeded",
+      status: "Succeeded" as const,
       termLabel: r.termLabel,
     };
   });
@@ -272,6 +274,15 @@ export function mockHistoryGroups(): PaymentHistoryGroup[] {
     status: "Failed",
     termLabel: "Fall 2026",
   });
+
+  if (studentName) {
+    const target = studentName.trim().toLowerCase();
+    items = items.filter(
+      (item) => item.studentName.trim().toLowerCase() === target
+    );
+  }
+
+  if (items.length === 0) return [];
 
   const byTerm = new Map<string, PaymentHistoryItem[]>();
   for (const item of items) {

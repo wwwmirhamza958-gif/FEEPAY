@@ -82,6 +82,35 @@ export async function searchStudents(query: string): Promise<LoadState<StudentRo
   return useMockData() ? mock.searchStudents(query) : live.searchStudents(query);
 }
 
+export async function createStudent(input: {
+  externalId: string;
+  displayName: string;
+  programId: string;
+  termId: string;
+  fatherMobile: string;
+  fatherDisplayName?: string;
+}): Promise<
+  | { ok: true; data: live.AddStudentResult }
+  | { ok: false; error: ApiErrorEnvelope }
+> {
+  if (useMockData()) {
+    return {
+      ok: false,
+      error: {
+        error: {
+          code: "MOCK_NOT_SUPPORTED",
+          message: "Add Student requires the live API (unset NEXT_PUBLIC_PORTAL_DATA=mock).",
+          messageKey: "errors.mock_not_supported",
+          correlationId: "00000000-0000-0000-0000-000000000000",
+          details: [],
+          retryable: false,
+        },
+      },
+    };
+  }
+  return live.createStudent(input);
+}
+
 export async function fetchTerms(): Promise<LoadState<AcademicTerm[]>> {
   if (useMockData()) {
     return {

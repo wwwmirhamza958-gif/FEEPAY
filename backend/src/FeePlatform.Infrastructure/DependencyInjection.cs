@@ -1,8 +1,10 @@
+using FeePlatform.Infrastructure.Academic;
 using FeePlatform.Infrastructure.Audit;
 using FeePlatform.Infrastructure.Auth;
 using FeePlatform.Infrastructure.Billing;
 using FeePlatform.Infrastructure.Integrations;
 using FeePlatform.Infrastructure.Outbox;
+using FeePlatform.Infrastructure.Parent;
 using FeePlatform.Infrastructure.Payments;
 using FeePlatform.Infrastructure.Persistence;
 using FeePlatform.Infrastructure.Tenancy;
@@ -50,6 +52,7 @@ public static class DependencyInjection
         services.AddScoped<IAuditWriter, AuditWriterStub>();
         services.AddSingleton<IFeeEngine, FeeEngineImpl>();
         services.AddScoped<BillingService>();
+        services.AddScoped<StudentOnboardingService>();
         services.AddScoped<ImportWizardService>();
         services.AddSingleton<IErpConnector, StubErpConnector>();
 
@@ -57,6 +60,8 @@ public static class DependencyInjection
         services.AddScoped<IInvoicePaymentApplier, BillingInvoicePaymentApplier>();
         services.AddScoped<IPayableLookup, BillingPayableLookup>();
         services.AddScoped<PaymentService>();
+        services.AddScoped<ParentAccessService>();
+        services.AddScoped<ParentDashboardService>();
         services.AddSingleton<IPaymentAdapter, RaastP2mPilotAdapter>();
         services.AddSingleton<IPaymentAdapter, JazzCashPilotAdapter>();
         services.AddSingleton<IPaymentAdapter, EasypaisaPilotAdapter>();

@@ -6,7 +6,6 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { MockBanner } from "@/components/PhoneShell";
 import {
   ScreenBody,
   ScreenEmpty,
@@ -15,20 +14,61 @@ import {
 } from "@/components/ScreenStates";
 import { formatPaidAt } from "@/lib/format";
 import {
-  fetchPaymentHistory,
-  type PaymentHistoryGroup,
-} from "@/lib/payments";
+  fetchGuardianDashboard,
+  fetchParentPaymentHistory,
+  type ParentPaymentHistoryItem,
+} from "@/lib/parent/client";
 import type { LoadState } from "@/lib/types";
+
+type HistoryGroup = {
+  termLabel: string;
+  items: ParentPaymentHistoryItem[];
+};
+
+function groupHistory(items: ParentPaymentHistoryItem[]): HistoryGroup[] {
+  const byTerm = new Map<string, ParentPaymentHistoryItem[]>();
+  for (const item of items) {
+    const list = byTerm.get(item.termLabel) ?? [];
+    list.push(item);
+    byTerm.set(item.termLabel, list);
+  }
+  return [...byTerm.entries()].map(([termLabel, termItems]) => ({
+    termLabel,
+    items: termItems,
+  }));
+}
 
 export function PaymentHistoryScreen() {
   const router = useRouter();
-  const [state, setState] = useState<LoadState<PaymentHistoryGroup[]>>({
+  const [state, setState] = useState<LoadState<HistoryGroup[]>>({
     status: "loading",
   });
+  const [studentLabel, setStudentLabel] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setState({ status: "loading" });
-    setState(await fetchPaymentHistory());
+    const dash = await fetchGuardianDashboard();
+    if (dash.status === "error") {
+      setState({ status: "error", error: dash.error });
+      return;
+    }
+    if (dash.status === "empty") {
+      setStudentLabel(null);
+      setState({ status: "empty" });
+      return;
+    }
+
+    setStudentLabel(dash.data.studentName);
+    const history = await fetchParentPaymentHistory(dash.data.studentId);
+    if (history.status === "error") {
+      setState({ status: "error", error: history.error });
+      return;
+    }
+    if (history.status === "empty") {
+      setState({ status: "empty" });
+      return;
+    }
+    setState({ status: "success", data: groupHistory(history.data) });
   }, []);
 
   useEffect(() => {
@@ -42,7 +82,11 @@ export function PaymentHistoryScreen() {
   if (state.status === "empty") {
     return (
       <ScreenEmpty
-        title="No payments yet. When you pay a statement, receipts show up here."
+        title={
+          studentLabel
+            ? `No payments yet for ${studentLabel}. Creating a voucher only opens the fee — use Pay Now, then it appears here.`
+            : "No payments yet. Creating a voucher only opens the fee — use Pay Now, then it appears here."
+        }
         actionLabel="Back to home"
         onAction={() => router.push("/home")}
       />
@@ -50,45 +94,35 @@ export function PaymentHistoryScreen() {
   }
 
   return (
-    <ScreenBody>
-      <MockBanner />
-      <div className="px-[var(--space-16)] pb-[var(--space-24)] pt-[var(--space-16)]">
-        <Link
-          href="/home"
-          className="inline-flex min-h-11 items-center font-[var(--font-body-strong)] text-accent touch-manipulation"
-        >
-          Home
-        </Link>
-        <h1 className="mt-[var(--space-12)] font-[var(--font-title-1)] text-ink">
-          Payment history
-        </h1>
-
-        <div className="mt-[var(--space-20)] flex flex-col gap-[var(--space-24)]">
+    <ScreenBody
+      title="Payment history"
+      subtitle={studentLabel ? `For ${studentLabel}` : undefined}
+    >
+      <div className="px-[var(--space-16)] pb-[var(--space-24)] pt-[var(--space-16)] lg:px-[var(--space-24)]">
+        <div className="flex flex-col gap-[var(--space-24)]">
           {state.data.map((group) => (
-            <section key={group.termLabel}>
-              <h2 className="font-[var(--font-title-2)] text-ink">
-                {group.termLabel}
-              </h2>
+            <section key={group.termLabel} className="fee-enter-delay-1">
+              <h2 className="fee-title-2 text-ink">{group.termLabel}</h2>
               <ul className="mt-[var(--space-12)] flex flex-col gap-[var(--space-12)]">
                 {group.items.map((item) => {
                   const href = item.receiptId
                     ? `/payments/receipts/${item.receiptId}`
-                    : `/payments/attempts/${item.id}`;
+                    : `/payments/attempts/${item.attemptId}`;
                   return (
-                    <li key={item.id}>
+                    <li key={item.attemptId}>
                       <Link
                         href={href}
-                        className="flex min-h-11 items-center justify-between gap-[var(--space-12)] rounded-fee-16 bg-surface p-[var(--space-16)] shadow-fee-1 touch-manipulation"
+                        className="fee-nav-tile flex min-h-11 items-center justify-between gap-[var(--space-12)] p-[var(--space-16)] touch-manipulation"
                       >
                         <div className="min-w-0">
                           <p className="font-[var(--font-title-2)] tabular-nums text-ink">
                             <Amount>{formatPkr(item.amount)}</Amount>
                           </p>
                           <p className="mt-[var(--space-4)] font-[var(--font-label)] text-ink-secondary">
-                            {item.studentName} · {item.channelName}
+                            {item.channelName}
                           </p>
                           <p className="mt-[var(--space-4)] font-[var(--font-label)] text-ink-tertiary">
-                            <bdi>{formatPaidAt(item.paidAt)}</bdi>
+                            <bdi>{formatPaidAt(item.paidAtUtc)}</bdi>
                           </p>
                           <div className="mt-[var(--space-8)]">
                             <StatusPill kind={item.status} />

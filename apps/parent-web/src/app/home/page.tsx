@@ -1,5 +1,5 @@
-import { HomeFamilyScreen } from "@/components/HomeFamilyScreen";
+import { GuardianFeeDashboardScreen } from "@/components/GuardianFeeDashboardScreen";
 
 export default function HomePage() {
-  return <HomeFamilyScreen />;
+  return <GuardianFeeDashboardScreen />;
 }

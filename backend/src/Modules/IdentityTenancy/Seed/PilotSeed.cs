@@ -24,5 +24,5 @@ public static class PilotSeed
     public static string AdapterSecretRef(string code) =>
         $"tenant/{TenantId:D}/adapters/{code}";
 
-    public const string GuardianMobileFake = "+923001111001";
+    public const string GuardianMobileFake = "+923001234567";
 }

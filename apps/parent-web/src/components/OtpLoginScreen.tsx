@@ -11,10 +11,15 @@ import {
   type FormEvent,
   type KeyboardEvent,
 } from "react";
-import { MockBanner, PhoneShell, StickyActionBar } from "@/components/PhoneShell";
+import {
+  MockBanner,
+  PhoneShell,
+  ProductMark,
+  StickyActionBar,
+} from "@/components/PhoneShell";
 import { formatCountdown, formatPkMobileInput } from "@/lib/format";
-import { digitsOnly, requestOtp, verifyOtp } from "@/lib/mock";
-import { MOCK_LINKED_MOBILE, MOCK_OTP_CODE } from "@/lib/mock/data";
+import { digitsOnly, requestOtp, setParentSessionId, verifyOtp } from "@/lib/parent/client";
+import { MOCK_LINKED_MOBILE } from "@/lib/mock/data";
 
 type Step = "mobile" | "otp";
 
@@ -25,6 +30,7 @@ export function OtpLoginScreen() {
   const [step, setStep] = useState<Step>("mobile");
   const [mobile, setMobile] = useState(formatPkMobileInput(MOCK_LINKED_MOBILE));
   const [challengeId, setChallengeId] = useState<string | null>(null);
+  const [devCodeHint, setDevCodeHint] = useState<string | null>(null);
   const [digits, setDigits] = useState<string[]>(["", "", "", "", "", ""]);
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [bannerError, setBannerError] = useState<string | null>(null);
@@ -70,6 +76,7 @@ export function OtpLoginScreen() {
       return;
     }
     setChallengeId(res.challengeId);
+    setDevCodeHint(res.devCode ?? null);
     setDigits(["", "", "", "", "", ""]);
     setStep("otp");
     setResendSeconds(45);
@@ -103,9 +110,7 @@ export function OtpLoginScreen() {
       queueMicrotask(() => inputsRef.current[0]?.focus());
       return;
     }
-    if (typeof window !== "undefined") {
-      window.sessionStorage.setItem("fee.parent.session", res.sessionToken);
-    }
+    setParentSessionId(res.sessionToken);
     router.push("/home");
   }
 
@@ -162,61 +167,55 @@ export function OtpLoginScreen() {
   return (
     <PhoneShell>
       <MockBanner />
-      <div className="flex flex-1 flex-col px-[var(--space-16)] pt-[var(--space-32)]">
-        <div className="mb-[var(--space-24)] flex items-center gap-[var(--space-12)]">
-          <span
-            className="fee-tenant-chip flex items-center justify-center font-[var(--font-label)] text-ink"
-            aria-hidden="true"
-          >
-            Fee
-          </span>
-          <p className="font-[var(--font-label)] text-ink-secondary">Fee Platform</p>
+      <div className="flex flex-1 flex-col px-[var(--space-16)] pt-[var(--space-32)] fee-enter">
+        <div className="mb-[var(--space-32)]">
+          <ProductMark subtitle="Pay university fees securely" />
         </div>
 
         {step === "mobile" ? (
-          <form onSubmit={onSendCode} className="flex flex-1 flex-col">
-            <h1 className="font-[var(--font-title-1)] text-ink">
-              Enter your mobile number
-            </h1>
+          <form onSubmit={onSendCode} className="flex flex-1 flex-col fee-enter-delay-1">
+            <h1 className="fee-title-1 text-ink">Enter your mobile number</h1>
             <p className="mt-[var(--space-8)] font-[var(--font-body)] text-ink-secondary">
               We&apos;ll text a one-time code. No password needed.
             </p>
 
-            <label
-              htmlFor={mobileId}
-              className="mt-[var(--space-24)] font-[var(--font-label)] text-ink"
-            >
-              Mobile number
-            </label>
-            <div className="mt-[var(--space-8)] flex min-h-12 items-stretch overflow-hidden rounded-fee-12 border border-border-strong bg-surface">
-              <span className="flex items-center border-e border-border bg-surface-sunken px-[var(--space-12)] font-[var(--font-body-strong)] tabular-nums text-ink">
-                +92
-              </span>
-              <input
-                id={mobileId}
-                type="tel"
-                inputMode="numeric"
-                autoComplete="tel-national"
-                placeholder="3XX XXXXXXX"
-                value={mobile}
-                onChange={(e) => {
-                  setMobile(formatPkMobileInput(e.target.value));
-                  setFieldError(null);
-                }}
-                aria-invalid={fieldError ? true : undefined}
-                aria-describedby={fieldError ? `${mobileId}-err` : undefined}
-                className="min-h-12 w-full bg-transparent px-[var(--space-12)] font-[var(--font-body)] text-[16px] text-ink outline-none"
-              />
-            </div>
-            {fieldError ? (
-              <p
-                id={`${mobileId}-err`}
-                role="alert"
-                className="mt-[var(--space-8)] font-[var(--font-label)] text-danger"
+            <div className="fee-surface-card mt-[var(--space-24)] p-[var(--space-16)]">
+              <label
+                htmlFor={mobileId}
+                className="font-[var(--font-label)] text-ink"
               >
-                {fieldError}
-              </p>
-            ) : null}
+                Mobile number
+              </label>
+              <div className="mt-[var(--space-8)] flex min-h-12 items-stretch overflow-hidden rounded-fee-12 border border-border-strong bg-canvas">
+                <span className="flex items-center border-e border-border bg-surface-sunken px-[var(--space-12)] font-[var(--font-body-strong)] tabular-nums text-ink">
+                  +92
+                </span>
+                <input
+                  id={mobileId}
+                  type="tel"
+                  inputMode="numeric"
+                  autoComplete="tel-national"
+                  placeholder="3XX XXXXXXX"
+                  value={mobile}
+                  onChange={(e) => {
+                    setMobile(formatPkMobileInput(e.target.value));
+                    setFieldError(null);
+                  }}
+                  aria-invalid={fieldError ? true : undefined}
+                  aria-describedby={fieldError ? `${mobileId}-err` : undefined}
+                  className="min-h-12 w-full bg-transparent px-[var(--space-12)] font-[var(--font-body)] text-[16px] text-ink outline-none"
+                />
+              </div>
+              {fieldError ? (
+                <p
+                  id={`${mobileId}-err`}
+                  role="alert"
+                  className="mt-[var(--space-8)] font-[var(--font-label)] text-danger"
+                >
+                  {fieldError}
+                </p>
+              ) : null}
+            </div>
 
             {bannerError ? (
               <p
@@ -231,18 +230,28 @@ export function OtpLoginScreen() {
             ) : null}
 
             <p className="mt-[var(--space-16)] font-[var(--font-micro)] text-ink-tertiary">
-              Demo: {formatPkMobileInput(MOCK_LINKED_MOBILE)} · code {MOCK_OTP_CODE}
+              Demo: {formatPkMobileInput(MOCK_LINKED_MOBILE)} · OTP 123456
             </p>
 
             <div className="flex-1" />
           </form>
         ) : (
-          <div className="flex flex-1 flex-col">
-            <h1 className="font-[var(--font-title-1)] text-ink">Enter the code</h1>
+          <div className="flex flex-1 flex-col fee-enter-delay-1">
+            <h1 className="fee-title-1 text-ink">Enter the code</h1>
             <p className="mt-[var(--space-8)] font-[var(--font-body)] text-ink-secondary">
               Sent to{" "}
-              <bdi className="tabular-nums">+92 {mobile}</bdi>
+              <bdi className="tabular-nums font-[var(--font-body-strong)] text-ink">
+                +92 {mobile}
+              </bdi>
             </p>
+            {devCodeHint ? (
+              <p className="mt-[var(--space-8)] rounded-fee-12 bg-surface-sunken px-[var(--space-12)] py-[var(--space-8)] font-[var(--font-micro)] text-ink-tertiary">
+                Dev OTP:{" "}
+                <span className="tabular-nums font-[var(--font-body-strong)] text-ink">
+                  {devCodeHint}
+                </span>
+              </p>
+            ) : null}
             <button
               type="button"
               className="mt-[var(--space-8)] min-h-11 self-start font-[var(--font-body-strong)] text-accent touch-manipulation"
@@ -256,31 +265,35 @@ export function OtpLoginScreen() {
             </button>
 
             <div
-              className={`mt-[var(--space-24)] flex justify-between gap-[var(--space-8)] ${
+              className={`fee-surface-card mt-[var(--space-24)] p-[var(--space-16)] ${
                 shake ? "fee-otp-shake" : ""
               }`}
-              role="group"
-              aria-label="One-time code"
-              aria-describedby={otpHintId}
             >
-              {digits.map((d, i) => (
-                <input
-                  key={i}
-                  ref={(el) => {
-                    inputsRef.current[i] = el;
-                  }}
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete={i === 0 ? "one-time-code" : "off"}
-                  maxLength={1}
-                  value={d}
-                  aria-label={`Digit ${i + 1}`}
-                  onChange={(e) => updateDigit(i, e.target.value)}
-                  onKeyDown={(e) => onOtpKeyDown(i, e)}
-                  onPaste={onOtpPaste}
-                  className="min-h-12 w-full max-w-12 rounded-fee-12 border border-border-strong bg-surface text-center font-[var(--font-title-2)] tabular-nums text-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                />
-              ))}
+              <div
+                className="flex justify-between gap-[var(--space-8)]"
+                role="group"
+                aria-label="One-time code"
+                aria-describedby={otpHintId}
+              >
+                {digits.map((d, i) => (
+                  <input
+                    key={i}
+                    ref={(el) => {
+                      inputsRef.current[i] = el;
+                    }}
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete={i === 0 ? "one-time-code" : "off"}
+                    maxLength={1}
+                    value={d}
+                    aria-label={`Digit ${i + 1}`}
+                    onChange={(e) => updateDigit(i, e.target.value)}
+                    onKeyDown={(e) => onOtpKeyDown(i, e)}
+                    onPaste={onOtpPaste}
+                    className="min-h-12 w-full max-w-12 rounded-fee-12 border border-border-strong bg-canvas text-center font-[var(--font-title-2)] tabular-nums text-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                  />
+                ))}
+              </div>
             </div>
             <p id={otpHintId} className="sr-only">
               Enter the six-digit code from your SMS. Pasting is supported.

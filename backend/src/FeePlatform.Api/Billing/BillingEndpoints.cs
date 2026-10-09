@@ -1,6 +1,8 @@
 using FeePlatform.Api.Auth;
+using FeePlatform.Infrastructure.Academic;
 using FeePlatform.Infrastructure.Billing;
 using FeePlatform.Infrastructure.Persistence;
+using FeePlatform.Infrastructure.Tenancy;
 using FeePlatform.Modules.Billing;
 using FeePlatform.Modules.IdentityTenancy;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +29,10 @@ public static class BillingEndpoints
         // R-C-E-011
         academic.MapGet("/students", ListStudents).WithName("ListStudents");
         academic.MapGet("/students/{studentId:guid}", GetStudent).WithName("GetStudent");
+        academic.MapPost("/students", CreateStudent)
+            .WithName("CreateStudent")
+            .Produces<AddStudentResult>(StatusCodes.Status200OK)
+            .Produces<ApiErrorEnvelope>(StatusCodes.Status400BadRequest);
 
         var billing = endpoints.MapGroup("/api/v1/billing").WithTags("Billing");
 
@@ -255,6 +261,21 @@ public static class BillingEndpoints
             student.IntakeId,
             enrolments,
         });
+    }
+
+    private static async Task<IResult> CreateStudent(
+        AddStudentRequest request,
+        StudentOnboardingService onboarding,
+        CancellationToken ct)
+    {
+        try
+        {
+            return Results.Ok(await onboarding.AddStudentWithParentAsync(request, ct));
+        }
+        catch (BillingDomainException ex)
+        {
+            return DomainError(ex);
+        }
     }
 
     private static IResult ListFeeHeads() =>

@@ -265,12 +265,14 @@ export async function fetchPaymentReceipt(
   return { status: "success", data: res.data };
 }
 
-export async function fetchPaymentHistory(): Promise<
-  LoadState<PaymentHistoryGroup[]>
-> {
+export async function fetchPaymentHistory(opts?: {
+  studentName?: string;
+}): Promise<LoadState<PaymentHistoryGroup[]>> {
+  const studentName = opts?.studentName?.trim();
+
   if (useMock()) {
     await delay(null, 400);
-    const groups = mockHistoryGroups();
+    const groups = mockHistoryGroups(studentName);
     if (groups.length === 0) return { status: "empty" };
     return { status: "success", data: groups };
   }
@@ -279,9 +281,28 @@ export async function fetchPaymentHistory(): Promise<
   const res = await getJson<{ groups: PaymentHistoryGroup[] }>(
     "/api/v1/payments/history"
   );
-  if (!res.ok) return { status: "error", error: res.error };
-  if (!res.data.groups.length) return { status: "empty" };
-  return { status: "success", data: res.data.groups };
+  // Live history API is not shipped yet — fall back to demo history filtered
+  // to this parent's linked student only.
+  if (!res.ok) {
+    const groups = mockHistoryGroups(studentName);
+    if (groups.length === 0) return { status: "empty" };
+    return { status: "success", data: groups };
+  }
+
+  let groups = res.data.groups;
+  if (studentName) {
+    const target = studentName.toLowerCase();
+    groups = groups
+      .map((g) => ({
+        ...g,
+        items: g.items.filter(
+          (item) => item.studentName.trim().toLowerCase() === target
+        ),
+      }))
+      .filter((g) => g.items.length > 0);
+  }
+  if (!groups.length) return { status: "empty" };
+  return { status: "success", data: groups };
 }
 
 export async function createPayLink(

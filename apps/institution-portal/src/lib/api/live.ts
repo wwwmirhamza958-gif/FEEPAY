@@ -347,6 +347,49 @@ export async function searchStudents(query: string): Promise<LoadState<StudentRo
   }
 }
 
+export type AddStudentInput = {
+  externalId: string;
+  displayName: string;
+  programId: string;
+  termId: string;
+  fatherMobile: string;
+  fatherDisplayName?: string;
+};
+
+export type AddStudentResult = {
+  studentId: string;
+  externalId: string;
+  displayName: string;
+  guardianId: string;
+  fatherMobileE164: string;
+  invoiceId: string;
+  feeAmount: string;
+  dueDate: string;
+  paymentStatus: string;
+};
+
+export async function createStudent(
+  input: AddStudentInput
+): Promise<{ ok: true; data: AddStudentResult } | { ok: false; error: ApiErrorEnvelope }> {
+  try {
+    const data = await apiFetch<AddStudentResult>("/api/v1/academic/students", {
+      method: "POST",
+      body: {
+        externalId: input.externalId,
+        displayName: input.displayName,
+        programId: input.programId,
+        termId: input.termId,
+        fatherMobile: input.fatherMobile,
+        fatherDisplayName: input.fatherDisplayName || undefined,
+        relation: "Father",
+      },
+    });
+    return { ok: true, data };
+  } catch (err) {
+    return failResult(err) as { ok: false; error: ApiErrorEnvelope };
+  }
+}
+
 /* ——— Terms (for preview term picker) ——— */
 
 export async function fetchTerms(): Promise<LoadState<AcademicTerm[]>> {

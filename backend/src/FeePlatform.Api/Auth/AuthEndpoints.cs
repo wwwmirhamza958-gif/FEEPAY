@@ -95,6 +95,12 @@ public static class AuthEndpoints
         }
 
         var code = RandomNumberGenerator.GetInt32(100000, 999999).ToString();
+        // Development dummy OTP for Finance → Parent testing (always 123456).
+        var exposeDevCode = environment.IsDevelopment()
+            || string.Equals(environment.EnvironmentName, "Testing", StringComparison.OrdinalIgnoreCase);
+        if (exposeDevCode)
+            code = "123456";
+
         var challenge = new OtpChallenge
         {
             Id = Guid.NewGuid(),
@@ -106,10 +112,6 @@ public static class AuthEndpoints
 
         db.OtpChallenges.Add(challenge);
         await db.SaveChangesAsync(ct);
-
-        // Return plaintext code only in Development/Testing (never Production).
-        var exposeDevCode = environment.IsDevelopment()
-            || string.Equals(environment.EnvironmentName, "Testing", StringComparison.OrdinalIgnoreCase);
 
         return Results.Ok(new OtpChallengeResponse(
             challenge.Id,
@@ -178,6 +180,43 @@ public static class AuthEndpoints
             db.PayerProfiles.Add(payer);
         }
 
+        // Link mobile → Guardian (per-tenant) → verified StudentGuardian. Fail closed when none.
+        var guardianIds = await db.Set<FeePlatform.Modules.Academic.Guardian>()
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Where(g => g.MobileE164 == challenge.MobileE164)
+            .Select(g => g.Id)
+            .ToListAsync(ct);
+        var linkedStudentCount = guardianIds.Count == 0
+            ? 0
+            : await db.Set<FeePlatform.Modules.Academic.StudentGuardian>()
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .Where(sg => guardianIds.Contains(sg.GuardianId) && sg.Verified)
+                .Select(sg => sg.StudentId)
+                .Distinct()
+                .CountAsync(ct);
+
+        if (linkedStudentCount == 0)
+        {
+            await db.SaveChangesAsync(ct);
+            return ApiErrors.Result(
+                StatusCodes.Status401Unauthorized,
+                "NO_LINKED_STUDENTS",
+                "This number isn't registered with any institution yet. Check with your university's finance office, or ask your child to send you a link code.",
+                "errors.no_linked_students",
+                retryable: false);
+        }
+
+        var guardianName = await db.Set<FeePlatform.Modules.Academic.Guardian>()
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Where(g => g.MobileE164 == challenge.MobileE164)
+            .Select(g => g.DisplayName)
+            .FirstOrDefaultAsync(ct);
+        if (!string.IsNullOrWhiteSpace(guardianName) && string.IsNullOrWhiteSpace(payer.DisplayName))
+            payer.DisplayName = guardianName;
+
         var session = new Session
         {
             Id = Guid.NewGuid(),
@@ -190,7 +229,12 @@ public static class AuthEndpoints
         await db.SaveChangesAsync(ct);
 
         // Tokens must not go to localStorage — httpOnly cookie / secure store later.
-        return Results.Ok(new AuthSessionResponse(session.Id, "access-token-stub", "refresh-token-stub"));
+        // AccessToken is the session id until JWT lands (parent sends X-Parent-Session-Id).
+        return Results.Ok(new AuthSessionResponse(
+            session.Id,
+            session.Id.ToString("D"),
+            "refresh-token-stub",
+            linkedStudentCount));
     }
 
     private static async Task<IResult> PortalLogin(
@@ -310,7 +354,11 @@ public sealed record OtpChallengeRequest(string Mobile);
 public sealed record OtpChallengeResponse(Guid ChallengeId, DateTimeOffset ExpiresAtUtc, string? DevCode);
 public sealed record OtpVerifyRequest(Guid ChallengeId, string Code);
 public sealed record PortalLoginRequest(string Email, string Password, string? TotpCode);
-public sealed record AuthSessionResponse(Guid SessionId, string AccessToken, string RefreshToken);
+public sealed record AuthSessionResponse(
+    Guid SessionId,
+    string AccessToken,
+    string RefreshToken,
+    int LinkedStudentCount = 0);
 
 /// <summary>CONTRACT §3 error envelope.</summary>
 public sealed record ApiErrorEnvelope(ApiErrorBody Error);

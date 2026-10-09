@@ -2,6 +2,7 @@ using FeePlatform.Api.Auth;
 using FeePlatform.Api.Billing;
 using FeePlatform.Api.Integrations;
 using FeePlatform.Api.OpenApi;
+using FeePlatform.Api.Parent;
 using FeePlatform.Api.Payments;
 using FeePlatform.Api.Tenancy;
 using FeePlatform.Infrastructure;
@@ -68,15 +69,21 @@ try
     }
 
     // FORBIDDEN: Database.Migrate() at startup — migrations run via CI/CD or explicit CLI.
-
-    // Dev-only pilot seed on InMemory (R-A-017). Never runs against Postgres here.
+    // Development may call EnsureCreated once (local Postgres only) so the pilot seed has tables.
     var dbProvider = app.Configuration.GetValue<string>(DependencyInjection.DatabaseProviderKey)
         ?? DependencyInjection.NpgsqlProvider;
-    if (app.Environment.IsDevelopment()
-        && string.Equals(dbProvider, DependencyInjection.InMemoryProvider, StringComparison.OrdinalIgnoreCase))
+    var inMemory = string.Equals(dbProvider, DependencyInjection.InMemoryProvider, StringComparison.OrdinalIgnoreCase);
+    var ensureCreated = app.Environment.IsDevelopment()
+        && app.Configuration.GetValue("Database:EnsureCreated", false);
+    if (app.Environment.IsDevelopment() && (inMemory || ensureCreated))
     {
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        if (ensureCreated && !inMemory)
+        {
+            await db.Database.EnsureCreatedAsync();
+        }
+
         await DevSeed.EnsureAppliedAsync(db);
     }
 
@@ -88,6 +95,7 @@ try
     app.MapBillingEndpoints();
     app.MapImportEndpoints();
     app.MapPaymentEndpoints();
+    app.MapParentEndpoints();
 
     app.MapPost("/internal/outbox/dispatch", async (IOutboxDispatcher dispatcher, CancellationToken ct) =>
     {
